@@ -1,0 +1,227 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--_________________________________________________________________________-->
+  <!--Materials-->
+  <gazebo reference="base_link">
+    <material>Gazebo/Orange</material>
+  </gazebo>
+  <gazebo reference="link_wheel_1">
+    <material>Gazebo/Black</material>
+  </gazebo>
+  <gazebo reference="link_wheel_2">
+    <material>Gazebo/Black</material>
+  </gazebo>
+  <gazebo reference="link_wheel_3">
+    <material>Gazebo/Black</material>
+  </gazebo>
+  <gazebo reference="link_wheel_4">
+    <material>Gazebo/Black</material>
+  </gazebo>
+  <gazebo reference="camera_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+  <gazebo reference="laser_link">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
+
+  <!--_________________________________________________________________________-->
+  <!--Cylinder-->
+
+  <xacro:macro name="default_inertial" params="mass">
+    <inertial>
+      <mass value="${mass}" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="cylinder_geometry" params="r h">
+    <geometry>
+      <cylinder length="${h}" radius="${r}"/>
+    </geometry>
+  </xacro:macro>
+
+  <!--_________________________________________________________________________-->
+  <!--Base-->
+
+  <xacro:macro name="base_link" params="name size_x size_y size_z">
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <box size="${size_x} ${size_y} ${size_z}"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 ${size_z}"/>
+        <material name="white">
+          <color rgba="1 1 1 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${size_x} ${size_y} ${size_z}"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 ${size_z}"/>
+      </collision>
+      <xacro:default_inertial mass="50"/>
+    </link>
+  </xacro:macro>
+
+  <!--_________________________________________________________________________-->
+  <!--Wheel-->
+
+  <xacro:property name="PI" value="3.1415926535897931"/>
+  <xacro:property name="halfPI" value="1.570796327"/>
+  <xacro:property name="width_wheel" value="0.1" />
+  <xacro:property name="radius_wheel" value="0.1" />
+
+  <xacro:macro name="wheel_link" params="name">
+    <link name="${name}">
+      <collision name="link_right_wheel_collision">
+        <origin rpy="0 1.5708 1.5708" xyz="0 0 0"/>
+        <xacro:cylinder_geometry r = "${radius_wheel}" h = "${width_wheel}" />
+      </collision>
+      <visual name="${name}_visual">
+        <origin rpy="0 1.5708 1.5708" xyz="0 0 0"/>
+        <xacro:cylinder_geometry r = "${radius_wheel}" h = "${width_wheel}" />
+      </visual>
+      <xacro:default_inertial mass="10"/>
+    </link>
+  </xacro:macro>
+
+  <xacro:macro name="wheel_joint" params="name child origin_xyz">
+    <joint name="${name}" type="continuous">
+      <origin rpy="0 0 0" xyz="${origin_xyz}"/>
+      <child link="${child}"/>
+      <parent link="base_link"/>
+      <axis rpy="0 0 0" xyz="0 1 0"/>
+      <limit effort="10000" velocity="1000"/>
+      <joint_properties damping="1.0" friction="1.0"/>
+    </joint>
+  </xacro:macro>
+
+
+  <!--_________________________________________________________________________-->
+  <!--Sensor Link -->
+
+  <xacro:macro name="sensor_link" params="name color">
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <box size="0.1 0.1 0.1"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <material name="${color}">
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="0.1 0.1 0.1 "/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+      </collision>
+      <xacro:default_inertial mass="10"/>
+    </link>
+  </xacro:macro>
+
+  <xacro:macro name="sensor_joint" params="name child origin_xyz">
+    <joint name="${name}" type="fixed">
+      <origin rpy="0 0 0" xyz="${origin_xyz}"/>
+      <child link="${child}"/>
+      <parent link="base_link"/>
+    </joint>
+  </xacro:macro>
+
+  <!--_________________________________________________________________________-->
+  <!--Il controller plugin (collegaci una ruota)-->
+
+  <xacro:macro name="cylinder_inertia" params="mass r h">
+    <inertia ixx="${mass}*(3*${r}*${r}+${h}*${h})/12}" 
+    ixy = "0" 
+    ixz = "0" iyy="${mass}*(3*${r}*${r}+${h}*${h})/12}" 
+    iyz = "0" izz="${mass}*(${r}*${r})/2}"/>
+  </xacro:macro>
+
+  <!--_________________________________________________________________________-->
+  <!-- Camera plugin -->
+
+  <xacro:macro name="camera_plugin" params="name ref_link">
+    <gazebo reference="${ref_link}">
+      <sensor type="camera" name="${name}">
+        <update_rate>30.0</update_rate>
+        <camera name="head">
+          <horizontal_fov>1.3962634</horizontal_fov>
+          <image>
+            <width>800</width>
+            <height>800</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.02</near>
+            <far>300</far>
+          </clip>
+          <noise>
+            <type>gaussian</type>
+            <!-- Noise is sampled independently per pixel on each frame.  
+             That pixel's noise value is added to each of its color
+             channels, which at that point lie in the range [0,1]. -->
+            <mean>0.0</mean>
+            <stddev>0.007</stddev>
+          </noise>
+        </camera>
+        <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>0.0</updateRate>
+          <cameraName>robot/${name}</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>${name}</frameName>
+          <hackBaseline>0.07</hackBaseline>
+          <distortionK1>0.0</distortionK1>
+          <distortionK2>0.0</distortionK2>
+          <distortionK3>0.0</distortionK3>
+          <distortionT1>0.0</distortionT1>
+          <distortionT2>0.0</distortionT2>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <!--_________________________________________________________________________-->
+  <!--Laser plugin-->
+
+  <xacro:macro name="laser_plugin" params="name ref_link">
+    <gazebo reference="${ref_link}">
+      <sensor type="ray" name="${name}">
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>true</visualize>
+        <update_rate>20</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>720</samples>
+              <resolution>1</resolution>
+              <min_angle>-1.570796</min_angle>
+              <max_angle>1.570796</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.10</min>
+            <max>10.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.01</stddev>
+          </noise>
+        </ray>
+        <plugin name="${name}_controller" filename="libgazebo_ros_laser.so">
+          <topicName>${name}/scan</topicName>
+          <frameName>${name}</frameName>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+
+</robot>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <!-- Defining the default values for params -->
+  <arg name="ns" default="robot"/>
+  <arg name="X" default="1"/>
+  <arg name="Y" default="1"/>
+  <arg name="Z" default="0.1"/>
+  <arg name="pkg" default="node_counting_alg"/>
+  <arg name="xacro_file" default="urdf/robot_nonhol.xacro"/>
+  <arg name="xacro_name" default="nonhol"/>
+  <arg name="xacro_pkg" value="$(eval find(pkg))" />
+
+  <!-- Load the URDF into the ROS Parameter Server -->
+  <param name="robot_description" 
+  	  command="$(find xacro)/xacro --inorder '$(arg xacro_pkg)/$(arg xacro_file)'" />
+    <!-- $(find $(arg pkg)) IS NOT ALLOWED 
+         $(eval find(arg('pkg')) IS ALLOWED -->
+
+
+  <!-- launching the spawner and the controller for robot -->
+  <group ns="$(arg ns)">
+
+    <!-- Load the URDF for the single namespace -->
+    <param name="robot_description" 
+  	  command="$(find xacro)/xacro --inorder '$(arg xacro_pkg)/$(arg xacro_file)'" />
+  
+    <param name="tf_prefix" value="robot_tf" />
+
+  	<node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    	args="-urdf -model $(arg xacro_name) -param robot_description -x  $(arg X) -y  $(arg Y) -z  $(arg Z)"/>
+
+  	<node name="controller" pkg="node_counting_alg" type="controller_node" />
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    </node>
+
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    </node>
+
+  </group>
+
+</launch>

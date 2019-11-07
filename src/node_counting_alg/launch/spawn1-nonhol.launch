@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  
+<include file="$(find node_counting_alg)/launch/world_init.launch">
+    <arg name="world" value="world03" />
+  </include>
+
+  <!-- Spawn the robot -->
+
+  <!-- Defining the namespaces of the robot -->
+  <include file="$(find node_counting_alg)/launch/spawn_robot.launch">
+    <arg name="ns" value="robot1"/>
+    <arg name="X" value="1"/>
+    <arg name="Y" value="1"/>
+    <arg name="Z" value="0.05"/>
+    <arg name="pkg" value="node_counting_alg"/>
+    <arg name="xacro_file" value="urdf/robot_nonhol.xacro"/>
+    <arg name="xacro_name" value="nonhol"/>
+  </include>
+
+ 
+
+</launch>
