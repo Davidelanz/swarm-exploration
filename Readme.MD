@@ -1,4 +1,4 @@
-# Eperimental Robotics Laboratory (EXROB) ROS workspace 
+# Eperimental Robotics Lab (EXROB) ROS workspace 
 
 Catkin workspace for EXROB course
 EMARO Advanced Robotics Master - 2st year
