@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+<robot name="nonhol" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+
+	<!-- Included files -->
+	<xacro:include filename="$(find node_counting_alg)/urdf/robot_nonhol.gazebo"/>
+	<xacro:include filename="$(find node_counting_alg)/urdf/materials.xacro" />
+
+	<!-- Fixed parameters -->				
+	<xacro:property name="mass_wheel" value="0.05" />
+	<xacro:property name="width_wheel" value="0.05" />
+	<xacro:property name="radius_wheel" value="0.05" />
+
+	<!-- _______________________________________________________ -->
+
+	<!-- Macros for inertia -->
+	<xacro:macro name="cylinder_inertia" params="mass r h"> 
+		<inertia 
+			ixx="${mass}*(3*${r}*${r}+${h}*${h})/12}" 
+			ixy = "0" 
+			ixz = "0"
+			iyy="${mass}*(3*${r}*${r}+${h}*${h})/12}" 
+			iyz = "0" 
+			izz="${mass}*(${r}*${r})/2}"/> 
+	</xacro:macro>
+
+	<!-- Macros for inertial -->
+	<xacro:macro name="default_inertial" params="mass">
+				<inertial>
+						<mass value="${mass}" />
+						<inertia ixx="1.0" ixy="0.0" ixz="0.0"
+								iyy="1.0" iyz="0.0"
+								izz="1.0" />
+				</inertial>
+	</xacro:macro>
+
+	<!-- Macros for geometry -->
+	<xacro:macro name="cylinder_geometry" params="r h">
+		<geometry>
+				<cylinder length="${h}" radius="${r}"/>
+		</geometry>
+	</xacro:macro>
+
+	<!-- Macros for wheels (links and joints) length="0.04" radius="0.1" -->
+	<xacro:macro name="wheel_link" params="name">
+		<link name="${name}">
+			<inertial>
+				<mass value="${mass_wheel}" />
+				<origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+				<xacro:cylinder_inertia mass = "${mass_wheel}" r="${radius_wheel}" h="${width_wheel}" />
+			</inertial>
+			<collision name="link_right_wheel_collision">
+				<origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+				<xacro:cylinder_geometry r = "${radius_wheel}" h = "${width_wheel}" />
+			</collision>
+			<visual name="${name}_visual">
+				<origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+				<xacro:cylinder_geometry r = "${radius_wheel}" h = "${width_wheel}" />
+			</visual>
+		</link>
+	</xacro:macro>
+	<xacro:macro name="wheel_joint" params="name child origin_xyz">
+		<joint name="${name}" type="continuous">
+			<origin rpy="0 0 0" xyz="${origin_xyz}"/>
+			<child link="${child}"/>
+			<parent link="base_link"/>
+			<axis rpy="0 0 0" xyz="0 1 0"/>
+			<limit effort="10000" velocity="1000"/>
+			<joint_properties damping="1.0" friction="1.0"/>
+		</joint>
+	</xacro:macro>
+
+	<!-- Macros for sensor (links and joints) -->
+	<xacro:macro name="sensor_link" params="name color">
+		<link name="${name}">
+			<inertial>
+				<mass value="1e-5" />
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+			</inertial>
+			<visual>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<geometry>
+					<box size="0.05 0.05 0.05"/>
+				</geometry>
+				<material name="${color}" />
+			</visual>
+		</link>
+	</xacro:macro>
+	<xacro:macro name="sensor_joint" params="name child origin_xyz">
+		<joint name="${name}" type="fixed">
+			<origin xyz="${origin_xyz}" rpy="0 0 0"/>
+			<child link="${child}"/>
+			<parent link="base_link"/>
+		</joint>
+	</xacro:macro>
+
+	<!-- _______________________________________________________ -->
+
+	<!-- Create robot's base_link -->
+	<link name="base_link">
+		<visual>
+			<geometry>
+				<box size="0.4 .2 .1"/>
+			</geometry>
+			<origin rpy="0 0 0" xyz="0 0 0.05"/>
+			<material name="white">
+				<color rgba="1 1 1 1"/>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<box size="0.4 0.2 0.1"/>
+			</geometry>
+		</collision>
+		<xacro:default_inertial mass="10"/>		
+	</link>
+
+	<!-- Create wheels -->  
+  	<xacro:wheel_link name="link_wheel1" />
+	<xacro:wheel_joint name="joint_wheel1"  child="link_wheel1"  origin_xyz="0.15 0.1 0"  />
+
+	<xacro:wheel_link name="link_wheel2" />
+	<xacro:wheel_joint name="joint_wheel2"  child="link_wheel2"  origin_xyz="-0.15 0.1 0"  />
+
+	<xacro:wheel_link name="link_wheel3" />
+	<xacro:wheel_joint name="joint_wheel3"  child="link_wheel3"  origin_xyz="0.15 -0.1 0"  />
+
+	<xacro:wheel_link name="link_wheel4" />
+	<xacro:wheel_joint name="joint_wheel4"  child="link_wheel4"  origin_xyz="-0.15 -0.1 0"  />
+
+	<!-- Create camera -->
+	<xacro:sensor_link name="camera_link" color = "red"/>
+	<xacro:sensor_joint name="camera_joint" child="camera_link"  origin_xyz="-0.12 0 0.12"  />
+
+	<!-- Create laser -->  
+	<xacro:sensor_link name="laser" color = "blue"/>
+	<xacro:sensor_joint name="laser_joint" child="laser"  origin_xyz="0.12 0 0.12"  />
+
+	<!-- _______________________________________________________ -->
+
+	<!-- Skid steer drive controller plugin -->
+	<!-- (Here and not in the .gazebo because it needs radius_wheel param) -->
+  	<gazebo>
+		<plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
+		<updateRate>100.0</updateRate>
+		<leftFrontJoint>joint_wheel1</leftFrontJoint>
+		<rightFrontJoint>joint_wheel3</rightFrontJoint>
+		<leftRearJoint>joint_wheel2</leftRearJoint>
+		<rightRearJoint>joint_wheel4</rightRearJoint>
+		<wheelDiameter>${radius_wheel}*2</wheelDiameter>
+		<robotBaseFrame>base_link</robotBaseFrame>
+		<torque>2</torque>
+		<topicName>cmd_vel</topicName>
+		<broadcastTF>1</broadcastTF>
+		</plugin>
+	</gazebo>
+       
+</robot>
