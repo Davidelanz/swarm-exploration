@@ -8,23 +8,14 @@ ros::Publisher pub;
 
 void odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
    {
-     if (msg->pose.pose.position.y < -3){
-	geometry_msgs::Twist vel;
-        vel.linear.x = 0;
-        vel.linear.y = 0;
-        vel.linear.z = 0;
-        vel.angular.x = 0;
-        vel.angular.x = 0;
-        vel.angular.x = 0;
-        pub.publish(vel);
-     }
-     else{
-	geometry_msgs::Twist vel;
-        vel.linear =msg->twist.twist.linear;
-        vel.angular =msg->twist.twist.angular;
-        pub.publish(vel);
-     
-   }
+   geometry_msgs::Twist vel;
+   vel.linear.x = msg->twist.twist.linear.x +0.1;
+   vel.linear.y = 0;
+   vel.linear.z = 0;
+   vel.angular.x = 0;
+   vel.angular.y = 0;
+   vel.angular.z = msg->twist.twist.angular.y + 0.1;
+   pub.publish(vel);
 }
 
 

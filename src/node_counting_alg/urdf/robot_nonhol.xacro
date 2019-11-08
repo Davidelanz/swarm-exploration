@@ -11,19 +11,21 @@
 
 	<!-- Create robot's base_link -->
 	<xacro:base_link name="base_link" size_x = "0.4" size_y = "0.2" size_z = "0.1" />
-
+	
 	<!-- Create wheels -->
-	<xacro:wheel_link name="link_wheel1" />
-	<xacro:wheel_joint name="joint_wheel1" child="link_wheel1" origin_xyz="0.15 0.15 0"/>
+	
+	<xacro:wheel_link name="link_lfront_wheel" />
+	<xacro:wheel_joint name="joint_lfront_wheel" child="link_lfront_wheel" origin_xyz="0.15 0.15 0"/>
 
-	<xacro:wheel_link name="link_wheel2" />
-	<xacro:wheel_joint name="joint_wheel2" child="link_wheel2" origin_xyz="-0.15 0.15 0"/>
+	<xacro:wheel_link name="link_rfront_wheel" />
+	<xacro:wheel_joint name="joint_rfront_wheel" child="link_rfront_wheel" origin_xyz="0.15 -0.15 0"/>
 
-	<xacro:wheel_link name="link_wheel3" />
-	<xacro:wheel_joint name="joint_wheel3" child="link_wheel3" origin_xyz="0.15 -0.15 0"/>
+	<xacro:wheel_link name="link_lrear_wheel" />
+	<xacro:wheel_joint name="joint_lrear_wheel" child="link_lrear_wheel" origin_xyz="-0.15 0.15 0"/>
 
-	<xacro:wheel_link name="link_wheel4" />
-	<xacro:wheel_joint name="joint_wheel4" child="link_wheel4" origin_xyz="-0.15 -0.15 0"/>
+	<xacro:wheel_link name="link_rrear_wheel" />
+	<xacro:wheel_joint name="joint_rrear_wheel" child="link_rrear_wheel" origin_xyz="-0.15 -0.15 0"/>
+	
 
 	<!-- Create camera -->
 	<xacro:sensor_link name="camera_link" color = "red"/>
@@ -36,26 +38,51 @@
 	<!-- _______________________________________________________ -->
 
 	<!-- Skid steer drive controller plugin -->
-	<!-- (Here and not in the .gazebo because it needs radius_wheel param)  -->
+	<!-- 
 	<gazebo>
 		<plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
 			<updateRate>	 100.0		  </updateRate>
-			<leftFrontJoint> joint_wheel1 </leftFrontJoint>
-			<rightFrontJoint>joint_wheel3 </rightFrontJoint>
-			<leftRearJoint>	 joint_wheel2 </leftRearJoint>
-			<rightRearJoint> joint_wheel4 </rightRearJoint>
-			<wheelDiameter>	 0.1		  </wheelDiameter>
+			<leftFrontJoint> joint_lfront_wheel </leftFrontJoint>
+			<rightFrontJoint>joint_rfront_wheel </rightFrontJoint>
+			<leftRearJoint>	 joint_lrear_wheel </leftRearJoint>
+			<rightRearJoint> joint_rrear_wheel </rightRearJoint>
+			<wheelDiameter>	 0.2		  </wheelDiameter>
 			<robotBaseFrame> base_link	  </robotBaseFrame>
 			<torque>		 2			  </torque>
 			<topicName>		 cmd_vel	  </topicName>
 			<broadcastTF>	 1			  </broadcastTF>
 		</plugin>
 	</gazebo>
+	-->
+
+	<gazebo>
+		<plugin filename="libgazebo_ros_diff_drive.so" name="differential_drive_controller">
+			<alwaysOn>true</alwaysOn>
+			<updateRate>100</updateRate>
+			<leftJoint>	 joint_lrear_wheel </leftJoint>
+			<rightJoint> joint_rrear_wheel </rightJoint>
+			<wheelSeparation>0.4</wheelSeparation>
+			<wheelDiameter>0.2</wheelDiameter>
+			<torque>2</torque>
+			<commandTopic>cmd_vel</commandTopic>
+			<odometryTopic>odom</odometryTopic>
+			<odometryFrame>odom</odometryFrame>
+			<robotBaseFrame>base_link</robotBaseFrame>
+			<rosDebugLevel>na</rosDebugLevel>
+			<publishWheelTF>true</publishWheelTF>
+			<publishWheelJointState>true</publishWheelJointState>
+			<legacyMode>false</legacyMode>
+			<wheelAcceleration>0</wheelAcceleration>
+			<wheelTorque>5</wheelTorque>
+			<odometrySource>world</odometrySource>
+			<publishTf>1</publishTf>
+		</plugin>
+	</gazebo>
 
 	<!-- Camera plugin -->
-	<xacro:camera_plugin name="camera1" ref_link = "camera_link"/>
+	<xacro:camera_plugin name="front_camera" ref_link = "camera_link"/>
 
 	<!-- Laser plugin -->
-	<xacro:laser_plugin name="laser1" ref_link = "laser_link"/>
+	<xacro:laser_plugin name="front_laser" ref_link = "laser_link"/>
 
 </robot>

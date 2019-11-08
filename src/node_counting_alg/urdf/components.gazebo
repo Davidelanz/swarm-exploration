@@ -26,15 +26,15 @@
   </gazebo>
 
 
-  <!--_________________________________________________________________________-->
-  <!--Cylinder-->
-
   <xacro:macro name="default_inertial" params="mass">
     <inertial>
       <mass value="${mass}" />
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
     </inertial>
   </xacro:macro>
+
+  <!--_________________________________________________________________________-->
+  <!--Cylinder-->
 
   <xacro:macro name="cylinder_geometry" params="r h">
     <geometry>
@@ -62,7 +62,7 @@
         </geometry>
         <origin rpy="0 0 0" xyz="0 0 ${size_z}"/>
       </collision>
-      <xacro:default_inertial mass="50"/>
+      <xacro:default_inertial mass="1"/>
     </link>
   </xacro:macro>
 
@@ -71,7 +71,7 @@
 
   <xacro:property name="PI" value="3.1415926535897931"/>
   <xacro:property name="halfPI" value="1.570796327"/>
-  <xacro:property name="width_wheel" value="0.1" />
+  <xacro:property name="width_wheel" value="0.05" />
   <xacro:property name="radius_wheel" value="0.1" />
 
   <xacro:macro name="wheel_link" params="name">
@@ -84,7 +84,7 @@
         <origin rpy="0 1.5708 1.5708" xyz="0 0 0"/>
         <xacro:cylinder_geometry r = "${radius_wheel}" h = "${width_wheel}" />
       </visual>
-      <xacro:default_inertial mass="10"/>
+      <xacro:default_inertial mass="0.1"/>
     </link>
   </xacro:macro>
 
@@ -129,16 +129,6 @@
       <child link="${child}"/>
       <parent link="base_link"/>
     </joint>
-  </xacro:macro>
-
-  <!--_________________________________________________________________________-->
-  <!--Il controller plugin (collegaci una ruota)-->
-
-  <xacro:macro name="cylinder_inertia" params="mass r h">
-    <inertia ixx="${mass}*(3*${r}*${r}+${h}*${h})/12}" 
-    ixy = "0" 
-    ixz = "0" iyy="${mass}*(3*${r}*${r}+${h}*${h})/12}" 
-    iyz = "0" izz="${mass}*(${r}*${r})/2}"/>
   </xacro:macro>
 
   <!--_________________________________________________________________________-->

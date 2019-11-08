@@ -98,8 +98,8 @@
 
   <xacro:link_wheel name="link_right_wheel" />
   <xacro:link_wheel name="link_left_wheel" />
-  <xacro:joint_wheel name="joint_right_wheel"  child="link_right_wheel"  origin_xyz="-0.05 0.15 0"  />
-  <xacro:joint_wheel name="joint_left_wheel"   child="link_left_wheel"   origin_xyz="-0.05 -0.15 0"  />
+  <xacro:joint_wheel name="joint_right_wheel"  child="link_right_wheel"  origin_xyz="-0.05 -0.15 0"  />
+  <xacro:joint_wheel name="joint_left_wheel"   child="link_left_wheel"   origin_xyz="-0.05 +0.15 0"  />
 
 
    <link name="laser">

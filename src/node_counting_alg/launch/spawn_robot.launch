@@ -12,10 +12,10 @@
   <arg name="xacro_pkg" value="$(eval find(pkg))" />
 
   <!-- Load the URDF into the ROS Parameter Server -->
+      <!-- $(find $(arg pkg)) IS NOT ALLOWED 
+         $(eval find(arg('pkg')) IS ALLOWED -->
   <param name="robot_description" 
   	  command="$(find xacro)/xacro --inorder '$(arg xacro_pkg)/$(arg xacro_file)'" />
-    <!-- $(find $(arg pkg)) IS NOT ALLOWED 
-         $(eval find(arg('pkg')) IS ALLOWED -->
 
 
   <!-- launching the spawner and the controller for robot -->
@@ -25,12 +25,13 @@
     <param name="robot_description" 
   	  command="$(find xacro)/xacro --inorder '$(arg xacro_pkg)/$(arg xacro_file)'" />
   
-    <param name="tf_prefix" value="robot_tf" />
+    <param name="tf_prefix" value="$(arg ns)_tf" />
 
   	<node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-    	args="-urdf -model $(arg xacro_name) -param robot_description -x  $(arg X) -y  $(arg Y) -z  $(arg Z)"/>
+    	args="-urdf -model $(arg ns)/$(arg xacro_name) -param robot_description -x  $(arg X) -y  $(arg Y) -z  $(arg Z)"/>
 
-  	<node name="controller" pkg="node_counting_alg" type="controller_node" />
+  	<!--<node name="controller" pkg="node_counting_alg" type="controller_node" />-->
+    <node name="controller" pkg="node_counting_alg" type="obstacle_avoidance.py" />
 
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
     </node>
