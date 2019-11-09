@@ -71,7 +71,7 @@
     
     <!-- caster front -->
     <collision name="caster_front_collision">
-      <origin rpy=" 0 0 0" xyz="0.35 0 -0.05"/>
+      <origin rpy=" 0 0 0" xyz="0.35 0 -0.15"/>
       <geometry>
         <sphere radius="0.05"/>
       </geometry>
@@ -87,7 +87,7 @@
       </surface>
     </collision>
     <visual name="caster_front_visual">
-      <origin rpy=" 0 0 0" xyz="0.2 0 -0.05"/>
+      <origin rpy=" 0 0 0" xyz="0.2 0 -0.15"/>
       <geometry>
         <sphere radius="0.05"/>
       </geometry>

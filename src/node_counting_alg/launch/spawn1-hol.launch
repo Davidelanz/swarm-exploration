@@ -14,8 +14,8 @@
     <arg name="Y" value="5"/>
     <arg name="Z" value="0.05"/>
     <arg name="pkg" value="node_counting_alg"/>
-    <arg name="xacro_file" value="urdf/robot_nonhol.xacro"/>
-    <arg name="xacro_name" value="nonhol"/>
+    <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
+    <arg name="xacro_name" value="hol"/>
   </include>
 
  

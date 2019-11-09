@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<robot name="hol" 
+	xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+
+	<!-- Included files -->
+	<xacro:include filename="$(find node_counting_alg)/urdf/components.gazebo"/>
+	<xacro:include filename="$(find node_counting_alg)/urdf/materials.xacro" />
+
+	<!-- _______________________________________________________ -->
+
+	<!-- Create robot's base_link -->
+	<xacro:base_link name="base_link" size_x = ".5" size_y = ".5" size_z = ".5" mass="5" />
+
+	<!-- Create wheels -->
+
+	<!-- Create camera -->
+	<xacro:sensor_link name="camera_link" color = "red"/>
+	<xacro:sensor_joint name="camera_joint" child="camera_link" origin_xyz="-0.12 0 0.2" />
+
+	<!-- Create laser -->
+	<xacro:sensor_link name="laser_link" color = "blue"/>
+	<xacro:sensor_joint name="laser_joint" child="laser_link" origin_xyz="0.12 0 0.2" />
+
+	<!-- _______________________________________________________ -->
+
+	<!-- ros_control plugin -->
+	<gazebo>
+		<plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+			<commandTopic>cmd_vel</commandTopic>
+			<odometryTopic>odom</odometryTopic>
+			<odometryFrame>odom</odometryFrame>
+			<odometryRate>20.0</odometryRate>
+			<robotBaseFrame>base_link</robotBaseFrame>
+		</plugin>
+	</gazebo>
+
+	<!-- Camera plugin -->
+	<xacro:camera_plugin name="front_camera" ref_link = "camera_link"/>
+
+	<!-- Laser plugin -->
+	<xacro:laser_plugin name="front_laser" ref_link = "laser_link"/>
+
+</robot>

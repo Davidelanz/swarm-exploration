@@ -6,38 +6,42 @@
   <arg name="X" default="1"/>
   <arg name="Y" default="1"/>
   <arg name="Z" default="0.1"/>
+  <arg name="des_x" default="-6"/>
+  <arg name="des_y" default="-6"/>
   <arg name="pkg" default="node_counting_alg"/>
   <arg name="xacro_file" default="urdf/robot_nonhol.xacro"/>
   <arg name="xacro_name" default="nonhol"/>
   <arg name="xacro_pkg" value="$(eval find(pkg))" />
 
+
   <!-- Load the URDF into the ROS Parameter Server -->
-      <!-- $(find $(arg pkg)) IS NOT ALLOWED 
+  <!-- $(find $(arg pkg)) IS NOT ALLOWED 
          $(eval find(arg('pkg')) IS ALLOWED -->
-  <param name="robot_description" 
-  	  command="$(find xacro)/xacro --inorder '$(arg xacro_pkg)/$(arg xacro_file)'" />
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(arg xacro_pkg)/$(arg xacro_file)'" />
 
 
   <!-- launching the spawner and the controller for robot -->
   <group ns="$(arg ns)">
 
     <!-- Load the URDF for the single namespace -->
-    <param name="robot_description" 
-  	  command="$(find xacro)/xacro --inorder '$(arg xacro_pkg)/$(arg xacro_file)'" />
-  
-    <param name="tf_prefix" value="$(arg ns)_tf" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(arg xacro_pkg)/$(arg xacro_file)'" />
+    <param name="tf_prefix" value="$(arg ns)"/>
+    <param name="des_pos_x" value="$(arg des_x)"/>
+    <param name="des_pos_y" value="$(arg des_y)"/>
 
-  	<node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-    	args="-urdf -model $(arg ns)/$(arg xacro_name) -param robot_description -x  $(arg X) -y  $(arg Y) -z  $(arg Z)"/>
+    <node name="go_to_point_switch" pkg="node_counting_alg" type="go_to_point_service.py"/>
+    <node name="wall_follow_switch" pkg="node_counting_alg" type="wall_follow_service.py"/>
 
-  	<!--<node name="controller" pkg="node_counting_alg" type="controller_node" />-->
-    <node name="controller" pkg="node_counting_alg" type="obstacle_avoidance.py" />
-
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -model $(arg ns)/$(arg xacro_name) -param robot_description -x  $(arg X) -y  $(arg Y) -z  $(arg Z)">
     </node>
 
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-    </node>
+    <!--<node name="controller" pkg="node_counting_alg" type="obstacle_avoidance_node.py" output="screen"/>-->
+    <node name="controller" pkg="node_counting_alg" type="bug_control_node.py" output="screen"/>
+    <!--<node name="controller" pkg="node_counting_alg" type="controller_node" output="screen"/>-->
+
+    <node name="robot_state_pub" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+    <node name="joint_state_pub" pkg="joint_state_publisher" type="joint_state_publisher"/>
 
   </group>
 
