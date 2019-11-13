@@ -12,6 +12,9 @@ import math
 
 #_____________________________________________________________________
 
+# Navigation velocities
+linear_vel = rospy.get_param('/lin_vel')
+angular_vel = rospy.get_param('/ang_vel')
 # robot state variables
 position_ = Point()
 yaw_ = 0
@@ -91,7 +94,7 @@ def fix_yaw(des_pos):
     
     twist_msg = Twist()
     if math.fabs(err_yaw) > yaw_precision_2_:
-        twist_msg.angular.z = 0.5 if err_yaw > 0 else -0.5
+        twist_msg.angular.z = angular_vel if err_yaw > 0 else -angular_vel
         pub.publish(twist_msg)
     else: #if math.fabs(err_yaw) <= yaw_precision_2_:
         rospy.loginfo('Yaw error: [%s]',  err_yaw)
@@ -112,7 +115,7 @@ def go_straight_ahead(des_pos):
     
     if err_pos > dist_precision_:
         twist_msg = Twist()
-        twist_msg.linear.x = 1
+        twist_msg.linear.x = linear_vel
         twist_msg.angular.z = -0.05*err_yaw if err_yaw > 0 else 0.05*err_yaw
         pub.publish(twist_msg)
     else:

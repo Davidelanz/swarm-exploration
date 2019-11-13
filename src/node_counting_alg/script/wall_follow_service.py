@@ -10,6 +10,9 @@ from std_srvs.srv import *
 # other imports
 import math
 
+# Navigation velocities
+linear_vel = rospy.get_param('/lin_vel')
+
 #_____________________________________________________________________
 
 pub_ = None
@@ -102,14 +105,14 @@ def take_action():
 
 def find_wall():
     msg = Twist()
-    msg.linear.x = 0.3
-    msg.angular.z = -0.3#turn right to try follow anyway the wall
+    msg.linear.x =  linear_vel/3
+    msg.angular.z = - linear_vel/3#turn right to try follow anyway the wall
     return msg
 
 
 def turn_left():
     msg = Twist()
-    msg.angular.z = 0.3
+    msg.angular.z = linear_vel/3
     return msg
 
 
@@ -117,7 +120,7 @@ def follow_the_wall():
     global regions_
     
     msg = Twist()
-    msg.linear.x = 1
+    msg.linear.x = linear_vel
     return msg
 
 #_____________________________________________________________________

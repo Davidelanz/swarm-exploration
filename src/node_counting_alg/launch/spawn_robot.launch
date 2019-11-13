@@ -39,10 +39,6 @@
 
     <node name="controller" pkg="node_counting_alg" type="controller_node.py"/>
 
-    <node name="basic_planner" pkg="node_counting_alg" type="basic_planner" output="screen"/>
-
-    <node name="mapper" pkg="node_counting_alg" type="mapper" output="screen"/>
-
     <node name="robot_state_pub" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
     <node name="joint_state_pub" pkg="joint_state_publisher" type="joint_state_publisher"/>

@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  
-<include file="$(find node_counting_alg)/launch/world_init.launch">
+
+  <!-- Spawn the world-->
+  <include file="$(find node_counting_alg)/launch/world_init.launch">
     <arg name="world" value="empty" />
   </include>
 
-  <!-- Spawn the robot -->
+  <!-- Set the velocities -->
+  <param name="lin_vel" value=".8"/>
+  <param name="ang_vel" value=".8"/>
 
-  <!-- Defining the namespaces of the robot -->
+  <!-- Spawn the robot -->
   <include file="$(find node_counting_alg)/launch/spawn_robot.launch">
     <arg name="ns" value="robot1"/>
     <arg name="X" value="5"/>
@@ -20,6 +23,11 @@
     <arg name="xacro_name" value="hol"/>
   </include>
 
- 
+  <group ns="robot1">
+    <!--<node name="basic_planner" pkg="node_counting_alg" type="basic_planner"/>-->
+    <node name="planner" pkg="node_counting_alg" type="planner" output="screen"/>
+    <node name="mapper" pkg="node_counting_alg" type="mapper"/>
+    <!--<node name="map_plotter" pkg="node_counting_alg" type="map_plotter_node.py" output="screen"/>-->
+  </group>
 
 </launch>
