@@ -56,15 +56,15 @@ bool updateCounter(double robotX, double robotY, int nearestNodeX, int nearestNo
     return newnode;
 }
 
-std::string mapCoder()
+string mapCoder()
 {   
     // ROS_INFO("I'm starting to code the map");
-    std::string s;
+    string s;
     for (int i = 0; i < map_size; i++)
     {
         for (int j = 0; j < map_size; j++)
         {
-            s.append(std::to_string(node_map.at(i).at(j)));
+            s.append(to_string(node_map.at(i).at(j)));
             s.append(",");
         }
     }
@@ -73,20 +73,20 @@ std::string mapCoder()
     return s;
 }
 
-vector<vector<int>> mapDecoder(std::string s)
+vector<vector<int>> mapDecoder(string s)
 {
     vector<vector<int>> decodedMap(map_size, vector<int>(map_size, 0));
-    std::string delimiter = ",";
+    string delimiter = ",";
     
     size_t pos = 0;
     int i = 0;
-    std::string token;
+    string token;
 
     // ROS_INFO("I'm starting to decode the map");
-    while ((pos = s.find(delimiter)) != std::string::npos)
+    while ((pos = s.find(delimiter)) != string::npos)
     {
         token = s.substr(0, pos);
-        decodedMap.at(i%map_size).at(i/map_size) = std::stoi(token);
+        decodedMap.at(i%map_size).at(i/map_size) = stoi(token);
         s.erase(0, pos + delimiter.length());
         i++;
     }
@@ -103,11 +103,6 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "mapper");
     ros::NodeHandle nh;
 
-    // Get spawn position
-    double X_spawn, Y_spawn;
-    nh.getParam("spawnX", X_spawn);
-    nh.getParam("spawnY", Y_spawn);
-
     // Subscribers & Services Clients
     ros::Subscriber sub = nh.subscribe("odom", 1000, odomCallback);
 
@@ -117,17 +112,15 @@ int main(int argc, char **argv)
 
     // Loop variables
     double robotX, robotY;
-    // Initialize nearest node at -1 to avoid double visiting node (0,0)
     int nearestNodeX, nearestNodeY;
-    int lastNodeVisitedX = 0;
-    int lastNodeVisitedY = 0;
+    int lastNodeVisitedX = map_size;
+    int lastNodeVisitedY = map_size;
     bool newNode = false;
     bool inInitialPos = false;
-    std::string direction = "right";
+    string direction = "right";
     std_msgs::String codedMap;
 
     ros::Rate rate(10);
-    // std::cin.ignore();
     while (ros::ok())
     {
         // Perform callbacks
@@ -151,9 +144,9 @@ int main(int argc, char **argv)
             }*/
              for (int j = 0; j < map_size; j++)
             {
-            std::cout<< mapDecoder(codedMap.data).at(i).at(j);
+            cout<< mapDecoder(codedMap.data).at(i).at(j);
             }
-            cout<<("") << endl; // tapullo
+            cout << endl;
         }
         mapPub.publish(codedMap);
 

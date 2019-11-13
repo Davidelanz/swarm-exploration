@@ -24,8 +24,8 @@
   </include>
 
   <group ns="robot1">
-    <!--<node name="basic_planner" pkg="node_counting_alg" type="basic_planner"/>-->
-    <node name="planner" pkg="node_counting_alg" type="planner" output="screen"/>
+    <node name="basic_planner" pkg="node_counting_alg" type="basic_planner"/>
+    <!--<node name="planner" pkg="node_counting_alg" type="planner" output="screen"/>-->
     <node name="mapper" pkg="node_counting_alg" type="mapper"/>
     <!--<node name="map_plotter" pkg="node_counting_alg" type="map_plotter_node.py" output="screen"/>-->
   </group>
