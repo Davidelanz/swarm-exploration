@@ -2,6 +2,7 @@
 #include "geometry_msgs/Twist.h"
 #include "nav_msgs/Odometry.h"
 #include "std_msgs/String.h"
+#include "geometry_msgs/Point32.h"
 #include <std_msgs/Float64.h>
 #include <cmath>
 #include <iostream>
@@ -34,7 +35,7 @@ void mapCallback(const std_msgs::String::ConstPtr &msg)
 
 void printMap()
 {
-    for (int y = map_size-1; y >= 0; y--)
+    for (int y = map_size - 1; y >= 0; y--)
     {
         for (int x = 0; x < map_size; x++)
             cout << node_map.at(x).at(y) << " ";
@@ -57,13 +58,7 @@ bool inNode(double robotX, double robotY, int &nearestNodeX, int &nearestNodeY)
 bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY)
 {
     // Array of possibile moves alongside all 8 direction
-    vector<vector<int>> move{           {+0, +1},   {+1, +1}, 
-                                                    {+1, 0 },
-                                                    {+1, -1},
-                                        { 0, -1}, 
-                            {-1, -1}, 
-                            {-1,  0},
-                            {-1, +1}};
+    vector<vector<int>> move{{+0, +1}, {+1, +1}, {+1, 0}, {+1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, +1}};
 
     // put a high count minimum
     int min = 99999;
@@ -92,7 +87,7 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY)
                 desIdx = i;
             }
         }
-        catch(const std::exception& e)
+        catch (const std::exception &e)
         {
             ROS_INFO("Near map bounds");
         }
@@ -140,11 +135,15 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "basic_planner");
     ros::NodeHandle nh;
 
+    int robot_ID;
+    nh.getParam("robot_ID", robot_ID);
+
     // Subscribers & Services Clients
     ros::Subscriber odom_sub = nh.subscribe("odom", 1000, odomCallback);
-    ros::Subscriber map_sub = nh.subscribe("node_map", 1000, mapCallback);
+    ros::Subscriber map_sub = nh.subscribe("/node_map", 1000, mapCallback);
     // Publishers & Services Servers
-    // ...
+    ros::Publisher visitedPub;
+    visitedPub = nh.advertise<geometry_msgs::Point32>("/node_visited", 5);
 
     // Loop variables
     double robotX, robotY;
@@ -154,6 +153,7 @@ int main(int argc, char **argv)
     bool newNode = false;
     bool inInitialPos = false;
     string direction = "right";
+    geometry_msgs::Point32 node_visited;
 
     ros::Rate rate(50);
     while (ros::ok())
@@ -174,35 +174,16 @@ int main(int argc, char **argv)
             lastNodeVisitedY = nearestNodeY;
         }
 
-        /*  //go to an init position specified by X,Y
-        // Check if position is reached
-        inInitialPos = (nearestNodeX == X || nearestNodeY == Y);
-        if(!inInitialPos)
-        {
-            // If initialPos is not reached keep moving
-            // towards (-X,-Y)
-
-            // ROS_INFO("Changing desired position towards (%d, %d)", -X,-Y);
-            nh.setParam("des_pos_x", -X); 
-            nh.setParam("des_pos_y", -Y);
-            continue;
-        }
-        */
-
         // If we're not in a new node, don't change the desired position
         if (newNode)
-            updateDesPos(nh, nearestNodeX, nearestNodeY);
-
-        /* End Check
-        // If you reach the last node, the trip finished
-        bool inUpperLeftNode = (nearestNodeX == -LIMIT && nearestNodeY == LIMIT);
-        bool inUpperRightNode = (nearestNodeX == LIMIT && nearestNodeY == LIMIT);
-        if(inUpperLeftNode || inUpperRightNode)
         {
-            inInitialPos = false; 
-            ROS_INFO("Last node reached");
+            updateDesPos(nh, nearestNodeX, nearestNodeY);
+            node_visited.x = nearestNodeX;
+            node_visited.y = nearestNodeY;
+            node_visited.z = robot_ID;
+            visitedPub.publish(node_visited);
         }
-        */
+
         rate.sleep();
     }
 

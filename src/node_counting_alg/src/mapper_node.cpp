@@ -150,8 +150,6 @@ int main(int argc, char **argv)
 
         codedMap.data = mapCoder();
 
-        printMap(codedMap);
-
         mapPub.publish(codedMap);
 
         rate.sleep();

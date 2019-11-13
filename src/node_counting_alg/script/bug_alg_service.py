@@ -120,7 +120,7 @@ def main():
             
             if state_ == 0:
                 if regions_['front'] > 0.15 and regions_['front'] < 1:
-                    rospy.loginfo("OBSTACLE DETECTED\n")
+                    rospy.loginfo("Obstacle detected\n")
                     change_state(1)
             
             elif state_ == 1:
@@ -133,8 +133,12 @@ def main():
                 if(err_yaw < -math.pi):
                     err_yaw=err_yaw+2*math.pi
 
-                if regions_['front'] > 0.5 and math.fabs(err_yaw)<0.05:
-                    rospy.loginfo("TOO FAR FROM WALL: not following anymore\n")
+                frontObstacle = regions_['front'] > .5
+                rightWall = regions_['front'] > .2 and regions_['fleft'] > .2 and regions_['fright'] < .2
+                betterGo = (not frontObstacle or not rightWall) and math.fabs(err_yaw)<0.05
+                noMoreWall = not (frontObstacle and rightWall)
+                if noMoreWall or betterGo:
+                    rospy.loginfo("Not following anymore\n")
                     change_state(0)
                 
         rate.sleep()

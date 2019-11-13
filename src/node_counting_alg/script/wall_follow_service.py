@@ -6,6 +6,7 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from tf import transformations
 from std_srvs.srv import *
+import random
 
 # other imports
 import math
@@ -72,7 +73,7 @@ def take_action():
     angular_z = 0
     state_description = ''
     
-    d = 1
+    d = .2
     
     if regions['front'] > d and regions['fleft'] > d and regions['fright'] > d:
         state_description = 'case 1 - nothing'
@@ -105,8 +106,11 @@ def take_action():
 
 def find_wall():
     msg = Twist()
-    msg.linear.x =  linear_vel/3
-    msg.angular.z = - linear_vel/3#turn right to try follow anyway the wall
+    # random values to avoid symmetric robot-robot detections and mirroring
+    msg.linear.x = randrange (-linear_vel/5,linear_vel,1)
+    # negative because you have to turn right to try follow anyway the wall
+    msg.angular.z = randrange (-linear_vel,linear_vel/5,1) 
+    # for both ranges there is a little contribute in the other sense in order to disrupt heavy simmetries
     return msg
 
 

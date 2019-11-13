@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <!-- Spawn the world-->
+  <include file="$(find node_counting_alg)/launch/world_init.launch">
+    <arg name="world" value="empty" />
+  </include>
+
+  <!-- Set the velocities -->
+  <param name="lin_vel" value=".8"/>
+  <param name="ang_vel" value=".8"/>
+
+  <!-- Launch the map interpolator -->
+  <param name="num_robot" value="2"/>
+  <node name="common_mapper" pkg="node_counting_alg" type="common_mapper_node" output="screen"/>
+
+  <!-- Spawn robot 1 -->
+  <include file="$(find node_counting_alg)/launch/spawn_robot.launch">
+    <arg name="ns" value="robot1"/>
+    <arg name="X" value="5"/>
+    <arg name="Y" value="5"/>
+    <arg name="Z" value="0"/>
+    <arg name="des_x" value="5"/>
+    <arg name="des_y" value="5"/>
+    <arg name="pkg" value="node_counting_alg"/>
+    <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
+    <arg name="xacro_name" value="hol"/>
+  </include>
+  <group ns="robot1">
+    <param name="robot_ID" value="1"/>
+    <node name="planner" pkg="node_counting_alg" type="planner_node"/>
+  </group>
+
+  <!-- Spawn robot 2 -->
+  <include file="$(find node_counting_alg)/launch/spawn_robot.launch">
+    <arg name="ns" value="robot2"/>
+    <arg name="X" value="-4"/>
+    <arg name="Y" value="-5"/>
+    <arg name="Z" value="0"/>
+    <arg name="des_x" value="-4"/>
+    <arg name="des_y" value="-5"/>
+    <arg name="pkg" value="node_counting_alg"/>
+    <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
+    <arg name="xacro_name" value="hol"/>
+  </include>
+  <group ns="robot2">
+    <param name="robot_ID" value="2"/>
+    <node name="planner" pkg="node_counting_alg" type="planner_node"/>
+  </group>
+
+
+</launch>
