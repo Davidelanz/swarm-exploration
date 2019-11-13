@@ -29,25 +29,6 @@ bool inNode(double robotX, double robotY, int &nearestNodeX, int &nearestNodeY)
     return (dist <= 0.2);
 }
 
-bool updateCounter(double robotX, double robotY, int nearestNodeX, int nearestNodeY,
-                   int &lastNodeVisitedX, int &lastNodeVisitedY)
-{
-    // Check if I'm in a new node
-    // ROS_INFO("Last node visited (%d, %d)", lastNodeVisitedX,lastNodeVisitedY);
-    bool newnode =  ((lastNodeVisitedX != nearestNodeX) || (lastNodeVisitedY != nearestNodeY));
-    if (newnode)
-    {
-        ROS_INFO("It's a new node");
-        // Updating last node visited
-        lastNodeVisitedX = nearestNodeX;
-        lastNodeVisitedY = nearestNodeY;
-        // Increment counter on the visited node
-        map[nearestNodeX + LIMIT][nearestNodeY + LIMIT]++;
-        ROS_INFO("Node (%d,%d) has been visited %d times", nearestNodeX,nearestNodeY,map[nearestNodeX + LIMIT][nearestNodeY + LIMIT]);
-    }
-    return newnode;
-}
-
 bool updateDesPos(ros::NodeHandle nh, std::string &direction, int nearestNodeX, int nearestNodeY)
 {
     // Go up and change the direction of the movement
@@ -119,7 +100,7 @@ int main(int argc, char **argv)
     bool inInitialPos =  false;
     std::string direction = "right";
 
-    ros::Rate rate(1);
+    ros::Rate rate(10);
     while (ros::ok())
     {
         // Perform callbacks
@@ -130,10 +111,13 @@ int main(int argc, char **argv)
         robotY = robotPose.position.y;
         // ROS_INFO("Current position: (%lf , %lf)",robotX,robotY);
 
+        // Check if we are in a new node
         if (inNode(robotX, robotY, nearestNodeX, nearestNodeY))
-            newNode = updateCounter(robotX, robotY, nearestNodeX, nearestNodeY, lastNodeVisitedX, lastNodeVisitedY);
-        else 
-            newNode = false;
+        {
+            newNode =  ((lastNodeVisitedX != nearestNodeX) || (lastNodeVisitedY != nearestNodeY));
+            lastNodeVisitedX = nearestNodeX;
+            lastNodeVisitedY = nearestNodeY;
+        }
 
         // Check if position is reached
         inInitialPos = (nearestNodeX == -LIMIT || nearestNodeY == -LIMIT);

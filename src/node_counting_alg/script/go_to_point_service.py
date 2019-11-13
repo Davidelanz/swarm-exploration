@@ -25,7 +25,7 @@ desired_position_.y = rospy.get_param('des_pos_y')
 desired_position_.z = 0
 # parameters
 yaw_precision_ = math.pi / 9 # +/- 20 degree allowed
-yaw_precision_2_ = math.pi / 45 # +/- 4 degree allowed
+yaw_precision_2_ = math.pi / 90 # +/- 2 degree allowed
 dist_precision_ = 0.15
 
 # publishers

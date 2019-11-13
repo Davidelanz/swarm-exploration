@@ -43,15 +43,14 @@ include_directories(
 
 ## Declare a cpp executable
 add_executable(basic_planner src/basic_planner.cpp)
+add_executable(mapper src/mapper.cpp)
+
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(robot1_description_node robot1_description_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(
-   basic_planner
-   ${catkin_LIBRARIES}
- )
-
+target_link_libraries(basic_planner ${catkin_LIBRARIES})
+target_link_libraries(mapper ${catkin_LIBRARIES})
 
