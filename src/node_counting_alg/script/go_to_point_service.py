@@ -19,13 +19,14 @@ yaw_ = 0
 state_ = 0
 # goal
 desired_position_ = Point()
+new_desired_pos_ = Point()
 desired_position_.x = rospy.get_param('des_pos_x')
 desired_position_.y = rospy.get_param('des_pos_y')
 desired_position_.z = 0
 # parameters
 yaw_precision_ = math.pi / 9 # +/- 20 degree allowed
-yaw_precision_2_ = math.pi / 90 # +/- 2 degree allowed
-dist_precision_ = 0.3
+yaw_precision_2_ = math.pi / 45 # +/- 4 degree allowed
+dist_precision_ = 0.15
 
 # publishers
 pub = None
@@ -90,7 +91,7 @@ def fix_yaw(des_pos):
     
     twist_msg = Twist()
     if math.fabs(err_yaw) > yaw_precision_2_:
-        twist_msg.angular.z = 0.2 if err_yaw > 0 else -0.2
+        twist_msg.angular.z = 0.5 if err_yaw > 0 else -0.5
         pub.publish(twist_msg)
     else: #if math.fabs(err_yaw) <= yaw_precision_2_:
         rospy.loginfo('Yaw error: [%s]',  err_yaw)
@@ -111,7 +112,7 @@ def go_straight_ahead(des_pos):
     
     if err_pos > dist_precision_:
         twist_msg = Twist()
-        twist_msg.linear.x = 0.6
+        twist_msg.linear.x = 1
         twist_msg.angular.z = -0.05*err_yaw if err_yaw > 0 else 0.05*err_yaw
         pub.publish(twist_msg)
     else:
@@ -129,6 +130,13 @@ def done():
     twist_msg.linear.x = 0
     twist_msg.angular.z = 0
     pub.publish(twist_msg)
+    new_desired_pos_.x = rospy.get_param('des_pos_x')
+    new_desired_pos_.y = rospy.get_param('des_pos_y')
+    if ((desired_position_.x != new_desired_pos_.x) or (desired_position_.y != new_desired_pos_.y)):
+        desired_position_.x = new_desired_pos_.x
+        desired_position_.y = new_desired_pos_.y
+        change_state(0)
+
 
 
 #_____________________________________________________________________
@@ -156,6 +164,7 @@ def main():
                 go_straight_ahead(desired_position_)
             elif state_ == 2:
                 done()
+                continue
             else:
                 rospy.logerr('Unknown state!')
         

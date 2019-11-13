@@ -120,6 +120,28 @@
     </link>
   </xacro:macro>
 
+  <xacro:macro name="borg_cube" params="name size_x size_y size_z elev_z coll_size_z mass">
+    <link name="${name}">
+      <xacro:default_inertial mass="${mass}"/>
+      <visual>
+        <geometry>
+          <box size="${size_x} ${size_y} ${size_z}"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 ${elev_z}"/>
+        <material name="black">
+          <color rgba="0 0 0 0"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${size_x} ${size_y} ${coll_size_z}"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+      </collision>
+    </link>
+  </xacro:macro>
+
+
 
   <!--_________________________________________________________________________-->
   <!--Wheel-->

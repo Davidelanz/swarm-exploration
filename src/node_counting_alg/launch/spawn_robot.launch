@@ -26,18 +26,20 @@
     <!-- Load the URDF for the single namespace -->
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(arg xacro_pkg)/$(arg xacro_file)'" />
     <param name="tf_prefix" value="$(arg ns)"/>
+    <param name="spawnX" value="$(arg X)"/>
+    <param name="spawnY" value="$(arg Y)"/>
     <param name="des_pos_x" value="$(arg des_x)"/>
     <param name="des_pos_y" value="$(arg des_y)"/>
 
     <node name="go_to_point_switch" pkg="node_counting_alg" type="go_to_point_service.py"/>
     <node name="wall_follow_switch" pkg="node_counting_alg" type="wall_follow_service.py"/>
+    <node name="bug_alg_switch" pkg="node_counting_alg" type="bug_alg_service.py"/>
 
-    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -model $(arg ns)/$(arg xacro_name) -param robot_description -x  $(arg X) -y  $(arg Y) -z  $(arg Z)">
-    </node>
+    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" args="-urdf -model $(arg ns)/$(arg xacro_name) -param robot_description -x  $(arg X) -y  $(arg Y) -z  $(arg Z)"/>
 
-    <!--<node name="controller" pkg="node_counting_alg" type="obstacle_avoidance_node.py" output="screen"/>-->
-    <node name="controller" pkg="node_counting_alg" type="bug_control_node.py" output="screen"/>
-    <!--<node name="controller" pkg="node_counting_alg" type="controller_node" output="screen"/>-->
+    <node name="controller" pkg="node_counting_alg" type="controller_node.py"/>
+
+    <node name="basic_planner" pkg="node_counting_alg" type="basic_planner" output="screen"/>
 
     <node name="robot_state_pub" pkg="robot_state_publisher" type="robot_state_publisher"/>
 

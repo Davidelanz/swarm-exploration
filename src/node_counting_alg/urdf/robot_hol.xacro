@@ -10,17 +10,16 @@
 	<!-- _______________________________________________________ -->
 
 	<!-- Create robot's base_link -->
-	<xacro:base_link name="base_link" size_x = ".5" size_y = ".5" size_z = ".5" mass="5" />
-
+	<xacro:borg_cube name="base_link" size_x = ".4" size_y = ".4" size_z = ".4" elev_z=".1" coll_size_z=".5" mass="5" />
 	<!-- Create wheels -->
 
 	<!-- Create camera -->
 	<xacro:sensor_link name="camera_link" color = "red"/>
-	<xacro:sensor_joint name="camera_joint" child="camera_link" origin_xyz="-0.12 0 0.2" />
+	<xacro:sensor_joint name="camera_joint" child="camera_link" origin_xyz="-0.12 0 .35" />
 
 	<!-- Create laser -->
 	<xacro:sensor_link name="laser_link" color = "blue"/>
-	<xacro:sensor_joint name="laser_joint" child="laser_link" origin_xyz="0.12 0 0.2" />
+	<xacro:sensor_joint name="laser_joint" child="laser_link" origin_xyz="0.12 0 .35" />
 
 	<!-- _______________________________________________________ -->
 

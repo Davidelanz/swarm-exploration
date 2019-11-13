@@ -1,0 +1,88 @@
+@startuml architecture
+scale 1
+class GoToPointService {
+	+ Locally Global Variables
+	Position_ yaw_  : robot state variables
+	state_
+	desired_position_ : read from parameter server
+	yaw_precision_
+	yaw_precision_2_
+	dist_precision_
+	pub = None
+	active_
+	+ Subscribes/SrvClients
+	sub_odom = rospy.Subscriber['odom', Odometry, clbk_odom\]
+	+ Publishes/SrvServers
+	srv = rospy.Service[rospy.get_namespace[] + 'go_to_point_switch', SetBool, go_to_point_switch]
+	pub = rospy.Publisher['cmd_vel', Twist, queue_size=1]
+	- Dynamics:
+	if state_ == 0 : Fix_yaw[desired_position_]
+	elif state_ == 1 : go_straight_ahead[desired_position_]
+	state_ == 2 : Done
+}
+
+class WallFollowService {
+	+ Locally Global Variables:
+	pub_ 
+	regions_
+	state_
+	state_dict_
+	active_ 
+	+ Subscribes/SrvClients:
+	sub = rospy.Subscriber['front_laser/scan', LaserScan, clbk_laser]
+	+ Publishes/SrvServers:
+	srv = rospy.Service[rospy.get_namespace[] + 'wall_follower_switch', SetBool, wall_follower_switch]
+	pub_ = rospy.Publisher['cmd_vel', Twist, queue_size=1]
+	- Dynamics:
+	if state_ == 0: msg = find_wall[]
+	elif state_ == 1: msg = turn_left[]
+	elif state_ == 2: msg = follow_the_wall[]
+	pub_.publish[msg]
+}
+
+class BugAlgService {
+	+ Global Variables:
+		srv_client_go_to_point_
+		srv_client_wall_follower_
+		position_ yaw_ [robot state variables]
+		yaw_error_allowed_
+		desired_position_ [read from parameter server]
+		regions_ 
+		state_
+	+ Subscribes/SrvClients:
+		sub_laser = rospy.Subscriber['front_laser/scan', LaserScan, clbk_laser]
+		sub_odom = rospy.Subscriber['odom', Odometry, clbk_odom]
+		srv_client_go_to_point_ = rospy.ServiceProxy['go_to_point_switch', SetBool]
+		srv_client_wall_follower_ = rospy.ServiceProxy['wall_follower_switch', SetBool]
+   	+ Publishes/SrvServers:
+		srv = rospy.Service[rospy.get_namespace[] + 'bug_alg_switch', SetBool, bug_alg_switch]
+	- Dynamics:
+            if state_ == 0:
+                if regions_['front'] > 0.15 and regions_['front'] < 0.5:
+                    rospy.loginfo["OBSTACLE DETECTED\n"]
+                    change_state[1]
+            elif state_ == 1:
+                desired_yaw = math.atan2[desired_position_.y - position_.y, desired_position_.x - position_.x]
+                err_yaw = normalize_angle[desired_yaw - yaw_]
+                if regions_['front'] > 2 and math.fabs[err_yaw]<0.05:
+                    rospy.loginfo["TOO FAR FROM WALL: not following anymore\n"]
+                    change_state[0]
+}
+
+class RobotControllerNode {
+	+ Global Variables:
+		srv_client_bug_alg_
+		position_ yaw_ [robot state variables] 
+		state_
+	+ Subscribes/SrvClients:
+		srv_client_bug_alg_ = rospy.ServiceProxy['bug_alg_switch', SetBool]
+   	+ Publishes/SrvServers:
+		
+	- Dynamics:
+}
+
+GoToPointService <|-- BugAlgService
+WallFollowService <|-- BugAlgService
+BugAlgService <|-- RobotControllerNode
+
+@enduml

@@ -42,7 +42,7 @@ include_directories(
 )
 
 ## Declare a cpp executable
-add_executable(controller_node src/controller_node.cpp)
+add_executable(basic_planner src/basic_planner.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -50,7 +50,7 @@ add_executable(controller_node src/controller_node.cpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(
-   controller_node
+   basic_planner
    ${catkin_LIBRARIES}
  )
 
