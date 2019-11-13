@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iostream>
 #include <cstdio>
+#include <algorithm>
 using namespace std;
 #define LIMIT 5
 
@@ -27,14 +28,18 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr &msg)
 void mapCallback(const std_msgs::String::ConstPtr &msg)
 {
     node_map = mapDecoder(msg->data);
-    // for (int i = 0; i < map_size; i++)
-    // {
-    //     for (int j = 0; j < map_size; j++)
-    //     {
-    //         std::cout << mapDecoder(msg->data).at(i).at(j);
-    //     }
-    //     cout << endl;
-    // }
+}
+
+// Functions
+
+void printMap()
+{
+    for (int y = map_size-1; y >= 0; y--)
+    {
+        for (int x = 0; x < map_size; x++)
+            cout << node_map.at(x).at(y) << " ";
+        cout << endl;
+    }
 }
 
 bool inNode(double robotX, double robotY, int &nearestNodeX, int &nearestNodeY)
@@ -51,76 +56,58 @@ bool inNode(double robotX, double robotY, int &nearestNodeX, int &nearestNodeY)
 
 bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY)
 {
-    // Array of possibile movements alongside all 8 direction
-    int movement[8][2] = {{0, 1}, {1, 1}, {1, 0}, {+1, -1}, {-1, 0}, {-1, -1}, {-1, 0}, {-1, +1}};
-    // Array of reachable position with the above movements
-    int min, minIndex, temp;
+    // Array of possibile moves alongside all 8 direction
+    vector<vector<int>> move{           {+0, +1},   {+1, +1}, 
+                                                    {+1, 0 },
+                                                    {+1, -1},
+                                        { 0, -1}, 
+                            {-1, -1}, 
+                            {-1,  0},
+                            {-1, +1}};
 
-    min = node_map.at(nearestNodeX + movement[0][0]).at(nearestNodeY + movement[0][1]);
-    minIndex = 0;
-    for (int i = 0; i < 9; i++)
+    // put a high count minimum
+    int min = 99999;
+    // index of desired position
+    int desIdx = 8;
+
+    printMap();
+
+    for (int i = 0; i < 8; i++)
     {
         try
         {
-            temp = node_map.at(nearestNodeX + movement[i][0]).at(nearestNodeY + movement[i][1]);
-            if (temp <= min)
+            int next_idx_X = nearestNodeX + LIMIT + move.at(i).at(0);
+            int next_idx_Y = nearestNodeY + LIMIT + move.at(i).at(1);
+            int curr_count = node_map.at(next_idx_X).at(next_idx_Y);
+            ROS_INFO("Count value for node (%d,%d) : %d - (Min value : %d)", next_idx_X, next_idx_Y, curr_count, min);
+
+            if (curr_count == 0)
             {
-                min = temp;
-                minIndex = i;
+                desIdx = i;
+                break;
+            }
+            else if (curr_count < min)
+            {
+                min = curr_count;
+                desIdx = i;
             }
         }
-        catch (const std::out_of_range &oor)
+        catch(const std::exception& e)
         {
-            std::cerr << "Out of Range error: " << oor.what() << '\n';
-
-            // catch (const std::exception &e)
-            // {
-            //     ROS_INFO("Catched an exception while searching for reachable position");
-            // continue;
+            ROS_INFO("Near map bounds");
         }
     }
-    nh.setParam("des_pos_x", nearestNodeX + movement[minIndex][0]);
-    nh.setParam("des_pos_y", nearestNodeY + movement[minIndex][1]);
-
-    /*
-    // Go up and change the direction of the movement
-    if (direction == "right")
+    if (desIdx < 8 || desIdx >= 0)
     {
-        // If you can go right
-        if(nearestNodeX != LIMIT)
-        {
-            ROS_INFO("Space available along X");
-            nh.setParam("des_pos_x", nearestNodeX + 1);
-            nh.setParam("des_pos_y", nearestNodeY);
-        }
-        else // You have to go up of 1 along y
-        {
-            ROS_INFO("Map limit reached");
-            nh.setParam("des_pos_x", nearestNodeX);
-            nh.setParam("des_pos_y", nearestNodeY + 1);
-            // Now you will move along x from right to left
-            direction = "left";
-        }
-    } 
-    else if (direction == "left")
+        nh.setParam("des_pos_x", nearestNodeX + move.at(desIdx).at(0));
+        nh.setParam("des_pos_y", nearestNodeY + move.at(desIdx).at(1));
+        return true;
+    }
+    else
     {
-        // If you can go right
-        if(nearestNodeX != -LIMIT)
-        {
-            ROS_INFO("Space available along X");
-            nh.setParam("des_pos_x", nearestNodeX - 1);
-            nh.setParam("des_pos_y", nearestNodeY);
-        }
-        else // You have to go up of 1 along y
-        {
-            ROS_INFO("Map limit reached");
-            nh.setParam("des_pos_x", nearestNodeX);
-            nh.setParam("des_pos_y", nearestNodeY + 1);
-            // Now you will move along x from right to left
-            direction = "right";
-        }
-    } */
-    return true;
+        ROS_ERROR("Update position failed: desired index not correct");
+        return false;
+    }
 }
 
 vector<vector<int>> mapDecoder(string s)
@@ -154,8 +141,8 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     // Subscribers & Services Clients
-    ros::Subscriber sub = nh.subscribe("odom", 1000, odomCallback);
-    ros::Subscriber sub2 = nh.subscribe("node_map", 1000, mapCallback);
+    ros::Subscriber odom_sub = nh.subscribe("odom", 1000, odomCallback);
+    ros::Subscriber map_sub = nh.subscribe("node_map", 1000, mapCallback);
     // Publishers & Services Servers
     // ...
 
@@ -168,7 +155,7 @@ int main(int argc, char **argv)
     bool inInitialPos = false;
     string direction = "right";
 
-    ros::Rate rate(10);
+    ros::Rate rate(50);
     while (ros::ok())
     {
         // Perform callbacks

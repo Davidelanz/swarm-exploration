@@ -13,20 +13,20 @@
   <!-- Spawn the robot -->
   <include file="$(find node_counting_alg)/launch/spawn_robot.launch">
     <arg name="ns" value="robot1"/>
-    <arg name="X" value="5"/>
-    <arg name="Y" value="5"/>
+    <arg name="X" value="0"/>
+    <arg name="Y" value="0"/>
     <arg name="Z" value="0"/>
-    <arg name="des_x" value="-2"/>
-    <arg name="des_y" value="-2"/>
+    <arg name="des_x" value="0"/>
+    <arg name="des_y" value="0"/>
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>
   </include>
 
   <group ns="robot1">
-    <node name="basic_planner" pkg="node_counting_alg" type="basic_planner"/>
-    <!--<node name="planner" pkg="node_counting_alg" type="planner" output="screen"/>-->
-    <node name="mapper" pkg="node_counting_alg" type="mapper"/>
+    <!--<node name="basic_planner" pkg="node_counting_alg" type="basic_planner"/>-->
+    <node name="planner" pkg="node_counting_alg" type="planner" output="screen"/>
+    <node name="mapper" pkg="node_counting_alg" type="mapper" />
     <!--<node name="map_plotter" pkg="node_counting_alg" type="map_plotter_node.py" output="screen"/>-->
   </group>
 

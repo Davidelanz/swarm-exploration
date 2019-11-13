@@ -33,7 +33,7 @@ bool inNode(double robotX, double robotY, int &nearestNodeX, int &nearestNodeY)
     //ROS_INFO("Nearest node: (%d , %d)",nearestNodeX,nearestNodeY);
     // Check if I'm close enough
     double dist = sqrt(pow(robotX - nearestNodeX, 2) + pow(robotY - nearestNodeY, 2));
-    ROS_INFO("Distance from node: %lf",dist);
+    ROS_INFO("Distance from node: %lf", dist);
     return (dist <= 0.2);
 }
 
@@ -57,14 +57,14 @@ bool updateCounter(double robotX, double robotY, int nearestNodeX, int nearestNo
 }
 
 string mapCoder()
-{   
+{
     // ROS_INFO("I'm starting to code the map");
     string s;
-    for (int i = 0; i < map_size; i++)
+    for (int y = 0; y < map_size; y++)
     {
-        for (int j = 0; j < map_size; j++)
+        for (int x = 0; x < map_size; x++)
         {
-            s.append(to_string(node_map.at(i).at(j)));
+            s.append(to_string(node_map.at(x).at(y)));
             s.append(",");
         }
     }
@@ -77,7 +77,7 @@ vector<vector<int>> mapDecoder(string s)
 {
     vector<vector<int>> decodedMap(map_size, vector<int>(map_size, 0));
     string delimiter = ",";
-    
+
     size_t pos = 0;
     int i = 0;
     string token;
@@ -86,13 +86,27 @@ vector<vector<int>> mapDecoder(string s)
     while ((pos = s.find(delimiter)) != string::npos)
     {
         token = s.substr(0, pos);
-        decodedMap.at(i%map_size).at(i/map_size) = stoi(token);
+        int x = i % map_size;
+        int y = i / map_size;
+        decodedMap.at(x).at(y) = stoi(token);
         s.erase(0, pos + delimiter.length());
         i++;
     }
-    
+
     // ROS_INFO("Finished to decode the map");
     return decodedMap;
+}
+
+void printMap(std_msgs::String codedMap)
+{
+    for (int y = map_size-1; y >= 0; y--)
+    {
+        for (int x = 0; x < map_size; x++)
+        {
+            cout << mapDecoder(codedMap.data).at(x).at(y);
+        }
+        cout << endl;
+    }
 }
 
 // Main
@@ -135,19 +149,9 @@ int main(int argc, char **argv)
             newNode = updateCounter(robotX, robotY, nearestNodeX, nearestNodeY, lastNodeVisitedX, lastNodeVisitedY);
 
         codedMap.data = mapCoder();
-        for (int i = 0; i < map_size; i++)
-        {
-           /* for (int j = 0; j < map_size; j++)
-            {
-                if (mapDecoder(codedMap.data).at(i).at(j) != node_map.at(i).at(j))
-                    ROS_INFO("The element in position (%d,%d) has been coded wrong", i, j);
-            }*/
-             for (int j = 0; j < map_size; j++)
-            {
-            cout<< mapDecoder(codedMap.data).at(i).at(j);
-            }
-            cout << endl;
-        }
+
+        printMap(codedMap);
+
         mapPub.publish(codedMap);
 
         rate.sleep();
