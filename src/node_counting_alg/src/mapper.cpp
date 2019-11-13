@@ -144,16 +144,11 @@ int main(int argc, char **argv)
         codedMap.data = mapCoder();
         for (int i = 0; i < map_size; i++)
         {
-           /* for (int j = 0; j < map_size; j++)
-            {
-                if (mapDecoder(codedMap.data).at(i).at(j) != node_map.at(i).at(j))
-                    ROS_INFO("The element in position (%d,%d) has been coded wrong", i, j);
-            }*/
              for (int j = 0; j < map_size; j++)
             {
             std::cout<< mapDecoder(codedMap.data).at(i).at(j);
             }
-            cout<<("") << endl; // tapullo
+            cout << endl;
         }
         mapPub.publish(codedMap);
 
