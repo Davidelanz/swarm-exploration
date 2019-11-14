@@ -40,7 +40,15 @@ The developed package is divided in the following folders:
 	```bash
     git clone
     ```
-
+2. Launch the desired launchfile through one of the following command
+	##### 1 robot
+	```bash
+	roslaunch node_counting_alg spawn1-hol.launch
+	```
+	##### 2 robot
+	```bash
+	roslaunch node_counting_alg spawn2-hol.launch
+	```
 
 
 Catkin workspace for EXROB course
