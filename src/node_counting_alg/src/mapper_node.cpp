@@ -134,7 +134,7 @@ int main(int argc, char **argv)
     string direction = "right";
     std_msgs::String codedMap;
 
-    ros::Rate rate(10);
+    ros::Rate rate(50);
     while (ros::ok())
     {
         // Perform callbacks

@@ -230,14 +230,14 @@ int main(int argc, char **argv)
         // Check if we are in the map
         try
         {
-            int a = node_map.at(nearestNodeX).at(nearestNodeY);
+            node_map.at(nearestNodeX+LIMIT).at(nearestNodeY+LIMIT);
         }
         catch(const std::exception& e)
         {
-            ROS_INFO("Out of the map");
+            std::cerr << "Robot" << robot_ID << "out of the map" << '\n';
             continue;
         }
-        
+
         // If we in a new node in the map, publish the position of the node we just entered
         if (newNode)
         {

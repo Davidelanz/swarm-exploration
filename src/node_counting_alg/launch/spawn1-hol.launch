@@ -10,6 +10,9 @@
   <param name="lin_vel" value=".8"/>
   <param name="ang_vel" value=".8"/>
 
+  <!-- Pass the map size -->
+  <param name="map_size" value="11"/>
+
   <!-- Launch the map interpolator -->
   <param name="num_robot" value="1"/>
   <node name="common_mapper" pkg="node_counting_alg" type="common_mapper_node"/>

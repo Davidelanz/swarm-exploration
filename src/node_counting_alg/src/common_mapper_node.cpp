@@ -101,13 +101,20 @@ int main(int argc, char **argv)
 
     // Loop variables;
     vector<vector<int>> last_node(num_robot, vector<int>(2, map_size));
-    curr_node.x = map_size;
-    curr_node.y = map_size;
-    curr_node.z = 0;
     std_msgs::String codedMap;
     int last_x, last_y, robot;
 
-    ros::Rate rate(10);
+    curr_node.x = map_size;
+    curr_node.y = map_size;
+    curr_node.z = 0;
+
+    ros::Rate rate(50);
+
+    while (curr_node.x > LIMIT || curr_node.y > LIMIT)
+        // Wait to start the actual process until
+        // a valid position from some robothas been sent
+        ros::spinOnce();
+
     while (ros::ok())
     {
         // Perform callbacks
@@ -140,26 +147,21 @@ int main(int argc, char **argv)
                 codedMap.data = mapCoder();
                 printMap(codedMap);
                 mapPub.publish(codedMap);
+                try
+                {
+                    // Save this new node for the robot
+                    last_node.at(robot).at(0) = curr_node.x;
+                    last_node.at(robot).at(1) = curr_node.y;
+                }
+                catch (const std::exception &e)
+                {
+                    std::cerr << "Storing current_node info from last_node array failed" << '\n';
+                }
             }
             catch (const std::exception &e)
             {
-                std::cerr << "Failed to update map count"
-                          << '\n'
-                          << e.what() << '\n';
+                std::cerr << "Robot "<< robot + 1 << " out of bounds"<< '\n';
             }
-            try
-            {
-                // Save this new node for the robot
-                last_node.at(robot).at(0) = curr_node.x;
-                last_node.at(robot).at(1) = curr_node.y;
-            }
-            catch (const std::exception &e)
-            {
-                std::cerr << "Storing current nodeinfo from last node array failed"
-                          << '\n'
-                          << e.what() << '\n';
-            }
-            
         }
 
         rate.sleep();
