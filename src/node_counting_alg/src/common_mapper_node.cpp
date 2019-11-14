@@ -74,7 +74,7 @@ void printMap(std_msgs::String codedMap)
     {
         for (int x = 0; x < map_size; x++)
         {
-            cout << mapDecoder(codedMap.data).at(x).at(y);
+            cout << mapDecoder(codedMap.data).at(x).at(y) << " ";
         }
         cout << endl;
     }
@@ -135,6 +135,11 @@ int main(int argc, char **argv)
             try
             {
                 node_map.at(curr_node.x + LIMIT).at(curr_node.y + LIMIT)++;
+
+                // If you can update the map, then print it in sceen and publish it
+                codedMap.data = mapCoder();
+                printMap(codedMap);
+                mapPub.publish(codedMap);
             }
             catch (const std::exception &e)
             {
@@ -154,9 +159,7 @@ int main(int argc, char **argv)
                           << '\n'
                           << e.what() << '\n';
             }
-            codedMap.data = mapCoder();
-            printMap(codedMap);
-            mapPub.publish(codedMap);
+            
         }
 
         rate.sleep();

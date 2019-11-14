@@ -23,6 +23,7 @@ state_ = 0
 state_dict_ = {
     0: 'fix yaw',
     1: 'go ahead',
+    2: 'goal reached',
 }
 # goal
 desired_position_ = Point()

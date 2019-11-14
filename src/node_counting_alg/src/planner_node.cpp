@@ -8,6 +8,9 @@
 #include <iostream>
 #include <cstdio>
 #include <algorithm>
+#include <numeric>
+#include <vector>
+#include <random>
 using namespace std;
 #define LIMIT 5
 
@@ -49,44 +52,85 @@ bool inNode(double robotX, double robotY, int &nearestNodeX, int &nearestNodeY)
     nearestNodeX = round(robotX);
     nearestNodeY = round(robotY);
     // ROS_INFO("Nearest node: (%d , %d)",nearestNodeX,nearestNodeY);
+
     // Check if I'm close enough
     double dist = sqrt(pow(robotX - nearestNodeX, 2) + pow(robotY - nearestNodeY, 2));
     // ROS_INFO("Distance from node: %lf",dist);
     return (dist <= 0.2);
 }
 
+bool inInitPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY) 
+//go to an init position specified by des_pos_X and des_pos_Y as a parameter at launch time
+{
+    // Check if position is reached
+    int initX, initY;
+    nh.getParam("dex_pos_x", initX); 
+    //because the first desired position is the initial position due to the fact
+    nh.getParam("des_pos_y", initY); 
+    //it won't be updated until the initial position is reached
+
+    return (nearestNodeX == initX || nearestNodeY == initY);
+}
+
 bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY)
 {
-    // Array of possibile moves alongside all 8 direction
-    //vector<vector<int>> move{{+0, +1}, {+1, +1}, {+1, 0}, {+1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, +1}};
-    vector<vector<int>> move{{+0, +1},{+1, +0},{+0, -1},{-1, +0},{ +1, +1},{+1, -1},{-1,  -1},{-1, +1}}; //the priority order to move in a unvisited node is:
-                                                                                                        // up > right > down > left >   up_right > down_right > down_left > up_left
-                                                                                                        // ^-<orthogonal movements>-^   ^----------<diagonal movements>-----------^
+    // Array of possibile moves alongside all 8 direction                                                     //When the robot is not in "RandomMovement" mode
+    vector<vector<int>> move{{+0, +1},
+                             {+1, +0},
+                             {+0, -1},
+                             {-1, +0},
+                             {+1, +1},
+                             {+1, -1},
+                             {-1, -1},
+                             {-1, +1}};
+    //the priority order to move in a unvisited node is:
+    // up > right > down > left >   up_right > down_right > down_left > up_left
+    // ^-<orthogonal movements>-^   ^----------<diagonal movements>-----------^
 
-
-                                                                                            
-    // put a high count minimum                                                                            
+    //random movement flag
+    bool randomMovement;
+    nh.getParam("random", randomMovement);
+    // put a high count minimum
     int min = 99999;
     // index of desired position
     int desIdx = 8;
 
     printMap();
 
+    vector<int> index;
+
+    if (randomMovement)
+    {
+        vector<int> index = {0, 1, 2, 3};           
+        //even while randomly moving,the orthogonal moves has priority on the diagonal moves
+        random_shuffle(index.begin(), index.end()); 
+        //shuffling the first 4 entries
+        vector<int> randomIndexDiag = {4, 5, 6, 7};
+        random_shuffle(randomIndexDiag.begin(), randomIndexDiag.end()); 
+        //shuffling the last 4 entries
+
+        index.insert(index.end(), randomIndexDiag.begin(), randomIndexDiag.end()); 
+        //concatenating the two vectors
+    }
+    else
+    {
+        index = {0, 1, 2, 3, 4, 5, 6, 7};
+    }
+
     for (int i = 0; i < 8; i++)
     {
         try
         {
-            int next_idx_X = nearestNodeX + LIMIT + move.at(i).at(0);
-            int next_idx_Y = nearestNodeY + LIMIT + move.at(i).at(1);
+            int next_idx_X = nearestNodeX + LIMIT + move.at(index[i]).at(0);
+            int next_idx_Y = nearestNodeY + LIMIT + move.at(index[i]).at(1);
             int curr_count = node_map.at(next_idx_X).at(next_idx_Y);
-            ROS_INFO("Count value for node (%d,%d) : %d - (Min value : %d)", next_idx_X, next_idx_Y, curr_count, min);
-
+            // If the next node is 0 just go there
             if (curr_count == 0)
             {
                 desIdx = i;
                 break;
             }
-            else if (curr_count < min)
+            else if (curr_count <= min)
             {
                 min = curr_count;
                 desIdx = i;
@@ -97,6 +141,7 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY)
             ROS_INFO("Near map bounds");
         }
     }
+
     if (desIdx < 8 || desIdx >= 0)
     {
         nh.setParam("des_pos_x", nearestNodeX + move.at(desIdx).at(0));
@@ -156,7 +201,6 @@ int main(int argc, char **argv)
     int lastNodeVisitedX = map_size * map_size;
     int lastNodeVisitedY = map_size * map_size;
     bool newNode = false;
-    bool inInitialPos = false;
     string direction = "right";
     geometry_msgs::Point32 node_visited;
 
@@ -179,7 +223,22 @@ int main(int argc, char **argv)
             lastNodeVisitedY = nearestNodeY;
         }
 
-        // If we're not in a new node, don't change the desired position
+        // If we're not in the desired intial position, keep moving towards it
+        if (!inInitPos(nh, nearestNodeX, nearestNodeY))
+            continue;
+
+        // Check if we are in the map
+        try
+        {
+            int a = node_map.at(nearestNodeX).at(nearestNodeY);
+        }
+        catch(const std::exception& e)
+        {
+            ROS_INFO("Out of the map");
+            continue;
+        }
+        
+        // If we in a new node in the map, publish the position of the node we just entered
         if (newNode)
         {
             updateDesPos(nh, nearestNodeX, nearestNodeY);
