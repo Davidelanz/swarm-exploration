@@ -107,10 +107,11 @@ def take_action():
 def find_wall():
     msg = Twist()
     # random values to avoid symmetric robot-robot detections and mirroring
-    msg.linear.x = randrange (-linear_vel/5,linear_vel,1)
+    msg.linear.x = float(random.randrange(-math.ceil(linear_vel*10),math.ceil(linear_vel*100),1))/100
     # negative because you have to turn right to try follow anyway the wall
-    msg.angular.z = randrange (-linear_vel,linear_vel/5,1) 
-    # for both ranges there is a little contribute in the other sense in order to disrupt heavy simmetries
+    msg.angular.z = float(random.randrange(-math.ceil(linear_vel*10),math.ceil(linear_vel*100),1))/100
+    # for both ranges there is a little contribute in the other sense in order 
+    # to disrupt heavy simmetries
     return msg
 
 
@@ -141,7 +142,7 @@ def main():
 
     srv = rospy.Service(rospy.get_namespace() + 'wall_follower_switch', SetBool, wall_follower_switch)
     
-    rate = rospy.Rate(20)
+    rate = rospy.Rate(50)
     while not rospy.is_shutdown():
         if not active_:
             rate.sleep()

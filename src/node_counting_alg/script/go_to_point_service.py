@@ -118,6 +118,10 @@ def go_straight_ahead(des_pos):
         twist_msg.linear.x = linear_vel
         twist_msg.angular.z = -0.05*err_yaw if err_yaw > 0 else 0.05*err_yaw
         pub.publish(twist_msg)
+        # if we are not arrived, check if the position in the meantime is changed
+        desired_position_.x = rospy.get_param('des_pos_x')
+        desired_position_.y = rospy.get_param('des_pos_y')
+        
     else:
         rospy.loginfo('Position error: [%s]' , err_pos)
         change_state(2)
@@ -156,7 +160,7 @@ def main():
     
     srv = rospy.Service(rospy.get_namespace() + 'go_to_point_switch', SetBool, go_to_point_switch)
     
-    rate = rospy.Rate(20)
+    rate = rospy.Rate(50)
     while not rospy.is_shutdown():
         if not active_:
             continue

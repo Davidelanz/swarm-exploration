@@ -103,7 +103,7 @@ def main():
             continue
         
         if state_ == 0:
-            if regions_['front'] > 0.15 and regions_['front'] < 0.5:
+            if regions_['front'] > 0.01 and regions_['front'] < 0.4:
                 rospy.loginfo("OBSTACLE DETECTED\n")
                 change_state(1)
         

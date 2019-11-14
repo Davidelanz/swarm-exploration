@@ -104,13 +104,10 @@ def main():
     
     srv = rospy.Service(rospy.get_namespace() + 'bug_alg_switch', SetBool, bug_alg_switch)
 
-    rospy.wait_for_service('go_to_point_switch')
-    rospy.wait_for_service('wall_follower_switch')
-
     # initialize going to the point
     change_state(0)
     
-    rate = rospy.Rate(20)
+    rate = rospy.Rate(50)
     while not rospy.is_shutdown():
         if not active_:
             continue
@@ -133,7 +130,7 @@ def main():
                 if(err_yaw < -math.pi):
                     err_yaw=err_yaw+2*math.pi
 
-                frontObstacle = regions_['front'] > .5
+                frontObstacle = regions_['front'] < .5
                 rightWall = regions_['front'] > .2 and regions_['fleft'] > .2 and regions_['fright'] < .2
                 betterGo = (not frontObstacle or not rightWall) and math.fabs(err_yaw)<0.05
                 noMoreWall = not (frontObstacle and rightWall)

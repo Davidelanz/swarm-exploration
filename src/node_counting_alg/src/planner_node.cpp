@@ -58,9 +58,14 @@ bool inNode(double robotX, double robotY, int &nearestNodeX, int &nearestNodeY)
 bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY)
 {
     // Array of possibile moves alongside all 8 direction
-    vector<vector<int>> move{{+0, +1}, {+1, +1}, {+1, 0}, {+1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, +1}};
+    //vector<vector<int>> move{{+0, +1}, {+1, +1}, {+1, 0}, {+1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, +1}};
+    vector<vector<int>> move{{+0, +1},{+1, +0},{+0, -1},{-1, +0},{ +1, +1},{+1, -1},{-1,  -1},{-1, +1}}; //the priority order to move in a unvisited node is:
+                                                                                                        // up > right > down > left >   up_right > down_right > down_left > up_left
+                                                                                                        // ^-<orthogonal movements>-^   ^----------<diagonal movements>-----------^
 
-    // put a high count minimum
+
+                                                                                            
+    // put a high count minimum                                                                            
     int min = 99999;
     // index of desired position
     int desIdx = 8;
