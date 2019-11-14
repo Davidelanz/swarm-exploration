@@ -73,7 +73,7 @@ def take_action():
     angular_z = 0
     state_description = ''
     
-    d = .2
+    d = .4
     
     if regions['front'] > d and regions['fleft'] > d and regions['fright'] > d:
         state_description = 'case 1 - nothing'
@@ -117,6 +117,7 @@ def find_wall():
 
 def turn_left():
     msg = Twist()
+    msg.angular.x = 0
     msg.angular.z = linear_vel/3
     return msg
 
@@ -126,6 +127,7 @@ def follow_the_wall():
     
     msg = Twist()
     msg.linear.x = linear_vel
+    msg.angular.z = 0
     return msg
 
 #_____________________________________________________________________
@@ -134,7 +136,8 @@ def follow_the_wall():
 def main():
     global pub_, active_
     
-    rospy.init_node('reading_laser')
+    rospy.init_node('wall_follow')
+    rospy.loginfo("Wall following service node started in state: %s" % state_dict_[state_])
     
     pub_ = rospy.Publisher('cmd_vel', Twist, queue_size=1)
     

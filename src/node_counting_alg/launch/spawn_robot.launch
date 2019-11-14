@@ -2,7 +2,8 @@
 <launch>
 
   <!-- Defining the default values for params -->
-  <arg name="ns" default="robot"/>
+  <arg name="ns" default="robot1"/>
+  <arg name="robID" default="1"/>
   <arg name="X" default="1"/>
   <arg name="Y" default="1"/>
   <arg name="Z" default="0.1"/>
@@ -26,6 +27,7 @@
     <!-- Load the URDF for the single namespace -->
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(arg xacro_pkg)/$(arg xacro_file)'" />
     <param name="tf_prefix" value="$(arg ns)"/>
+    <param name="robot_ID" value="$(arg robID)"/>
     <param name="spawnX" value="$(arg X)"/>
     <param name="spawnY" value="$(arg Y)"/>
     <param name="des_pos_x" value="$(arg des_x)"/>
@@ -38,11 +40,9 @@
     <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" args="-urdf -model $(arg ns)/$(arg xacro_name) -param robot_description -x  $(arg X) -y  $(arg Y) -z  $(arg Z)"/>
 
     <node name="controller" pkg="node_counting_alg" type="controller_node.py"/>
-
-    <node name="robot_state_pub" pkg="robot_state_publisher" type="robot_state_publisher"/>
-
-    <node name="joint_state_pub" pkg="joint_state_publisher" type="joint_state_publisher"/>
-
+    <node name="planner" pkg="node_counting_alg" type="planner_node"/>
+    <!--<node name="basic_planner" pkg="node_counting_alg" type="basic_planner_node"/>--> 
+    <!--<node name="mapper" pkg="node_counting_alg" type="mapper_node" />-->
   </group>
 
 </launch>

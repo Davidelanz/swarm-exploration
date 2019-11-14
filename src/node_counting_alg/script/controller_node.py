@@ -55,7 +55,7 @@ def change_state(state):
     global state_, state_desc_
     global srv_client_bug_alg_ # srv_client_objdetected???_
     state_ = state
-    rospy.loginfo("state changed: %s", state_desc_[state])
+    rospy.loginfo("Controller node - [%s] %s", state, state_desc_[state])
     if state_ == 0:
         resp = srv_client_bug_alg_(True)
     #    resp = srv_obstacle_detection_(False)
@@ -71,7 +71,7 @@ def main():
     global srv_client_bug_alg_
 
     rospy.init_node('robot_control')
-    rospy.loginfo("robot_control node started in state: %s" %
+    rospy.loginfo("Robot controller node started in state: %s" %
                   state_desc_[state_])
 
     #sub_laser = rospy.Subscriber('front_laser/scan', LaserScan, clbk_laser)
@@ -87,19 +87,20 @@ def main():
     rate = rospy.Rate(20)
     while not rospy.is_shutdown():
 
-        if state_ == 0:
+
+        # if state_ == 0:
             # doing bug algoritm
             # UNLESS SOME CONDITION
             # then
             # change_state(1)
-            continue
+            #continue
 
-        elif state_ == 1:
+        # elif state_ == 1:
             # obstacle detected
             # do smth UNTIL SOME CONDITION
             # then
             # change_state(0)
-            continue
+            #continue
 
         rate.sleep()
 

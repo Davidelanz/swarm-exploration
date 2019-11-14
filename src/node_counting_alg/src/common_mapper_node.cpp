@@ -100,7 +100,7 @@ int main(int argc, char **argv)
     mapPub = nh.advertise<std_msgs::String>("node_map", 5);
 
     // Loop variables;
-    vector<vector<int>> last_node(num_robot, vector<int>(2, (map_size, map_size, 0)));
+    vector<vector<int>> last_node(num_robot, vector<int>(2, map_size));
     curr_node.x = map_size;
     curr_node.y = map_size;
     curr_node.z = 0;
@@ -114,16 +114,18 @@ int main(int argc, char **argv)
         ros::spinOnce();
 
         // Get data
+        robot = curr_node.z - 1;
         try
         {
-            robot = curr_node.z - 1;
             // index starts from 0, robot ID from 1
             last_x = last_node.at(robot).at(0);
             last_y = last_node.at(robot).at(1);
         }
         catch (const std::exception &e)
         {
-            std::cerr << e.what() << '\n';
+            std::cerr << "Extracting info from last node array failed"
+                      << '\n'
+                      << e.what() << '\n';
         }
 
         // Update map count
@@ -133,19 +135,29 @@ int main(int argc, char **argv)
             try
             {
                 node_map.at(curr_node.x + LIMIT).at(curr_node.y + LIMIT)++;
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << "Failed to update map count"
+                          << '\n'
+                          << e.what() << '\n';
+            }
+            try
+            {
                 // Save this new node for the robot
                 last_node.at(robot).at(0) = curr_node.x;
                 last_node.at(robot).at(1) = curr_node.y;
             }
             catch (const std::exception &e)
             {
-                std::cerr << e.what() << '\n';
+                std::cerr << "Storing current nodeinfo from last node array failed"
+                          << '\n'
+                          << e.what() << '\n';
             }
+            codedMap.data = mapCoder();
+            printMap(codedMap);
+            mapPub.publish(codedMap);
         }
-
-        codedMap.data = mapCoder();
-        printMap(codedMap);
-        mapPub.publish(codedMap);
 
         rate.sleep();
     }

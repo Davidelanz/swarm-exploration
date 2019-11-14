@@ -20,6 +20,10 @@ position_ = Point()
 yaw_ = 0
 # machine state
 state_ = 0
+state_dict_ = {
+    0: 'fix yaw',
+    1: 'go ahead',
+}
 # goal
 desired_position_ = Point()
 new_desired_pos_ = Point()
@@ -70,7 +74,7 @@ def clbk_odom(msg):
 def change_state(state):
     global state_
     state_ = state
-    rospy.loginfo('State changed to [%s]' , state_)
+    rospy.loginfo('Go to point - [%s] - %s', state, state_dict_[state])
 
 
 def normalize_angle(angle):
@@ -84,7 +88,7 @@ def fix_yaw(des_pos):
     desired_yaw = math.atan2(des_pos.y - position_.y, des_pos.x - position_.x)
     err_yaw = normalize_angle(desired_yaw - yaw_)
     
-    rospy.loginfo(err_yaw)
+    # rospy.loginfo(err_yaw)
 
     if(err_yaw > math.pi):
         err_yaw=err_yaw-2*math.pi
@@ -97,7 +101,7 @@ def fix_yaw(des_pos):
         twist_msg.angular.z = angular_vel if err_yaw > 0 else -angular_vel
         pub.publish(twist_msg)
     else: #if math.fabs(err_yaw) <= yaw_precision_2_:
-        rospy.loginfo('Yaw error: [%s]',  err_yaw)
+        # rospy.loginfo('Yaw error: [%s]',  err_yaw)
         change_state(1)
         
 
@@ -123,12 +127,12 @@ def go_straight_ahead(des_pos):
         desired_position_.y = rospy.get_param('des_pos_y')
         
     else:
-        rospy.loginfo('Position error: [%s]' , err_pos)
+        # rospy.loginfo('Position error: [%s]' , err_pos)
         change_state(2)
     
     # state change conditions
     if math.fabs(err_yaw) > yaw_precision_:
-        rospy.loginfo('Yaw error: [%s]' , err_yaw)
+        # rospy.loginfo('Yaw error: [%s]' , err_yaw)
         change_state(0)
 
 
@@ -153,6 +157,7 @@ def main():
     global pub, active_
     
     rospy.init_node('go_to_point')
+    rospy.loginfo("Go to point service node started in state: %s" % state_dict_[state_])
     
     pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
     
