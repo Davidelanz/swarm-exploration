@@ -2,7 +2,7 @@
 
 The aim of this project was to build a simulation with up to 4 robots implementing the Node counting algorithm: a simple graph-traversal method.
 
-
+![alt text](https://github.com/Davidelanz/expro_asmt1/blob/master/demo.png)
 
 ## Implementation
 ### Assumptions
@@ -45,9 +45,9 @@ The developed package is divided in the following folders:
 	```bash
 	roslaunch node_counting_alg spawn1-hol.launch
 	```
-	##### 2 robot
+	##### 4 robots
 	```bash
-	roslaunch node_counting_alg spawn2-hol.launch
+	roslaunch node_counting_alg spawn4-hol.launch
 	```
 
 
