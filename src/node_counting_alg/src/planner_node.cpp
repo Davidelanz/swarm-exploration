@@ -59,7 +59,7 @@ bool inNode(double robotX, double robotY, int &nearestNodeX, int &nearestNodeY)
     return (dist <= 0.2);
 }
 
-bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY)
+bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int robot_ID)
 {
     // Array of possibile moves alongside all 8 direction                                                     //When the robot is not in "RandomMovement" mode
     vector<vector<int>> move{{+0, +1},
@@ -84,34 +84,34 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY)
 
     printMap();
 
-    vector<int> index;
+    vector<int> index = {0, 1, 2, 3, 4, 5, 6, 7};
 
     if (randomMovement)
     {
-        vector<int> index = {0, 1, 2, 3};           
+        vector<int> randIndex = {0, 1, 2, 3};
         //even while randomly moving,the orthogonal moves has priority on the diagonal moves
-        random_shuffle(index.begin(), index.end()); 
+        random_shuffle(randIndex.begin(), randIndex.end());
         //shuffling the first 4 entries
-        vector<int> randomIndexDiag = {4, 5, 6, 7};
-        random_shuffle(randomIndexDiag.begin(), randomIndexDiag.end()); 
+        vector<int> randIndexDiag = {4, 5, 6, 7};
+        random_shuffle(randIndexDiag.begin(), randIndexDiag.end());
         //shuffling the last 4 entries
 
-        index.insert(index.end(), randomIndexDiag.begin(), randomIndexDiag.end()); 
+        randIndex.insert(randIndex.end(), randIndexDiag.begin(), randIndexDiag.end());
         //concatenating the two vectors
-    }
-    else
-    {
-        index = {0, 1, 2, 3, 4, 5, 6, 7};
+        for (int i = 0; i < 8; i++)
+        {
+            index.at(i) = randIndex.at(i);
+        }
     }
 
     for (int i = 0; i < 8; i++)
     {
         try
         {
-            int next_idx_X = nearestNodeX + LIMIT + move.at(index[i]).at(0);
-            int next_idx_Y = nearestNodeY + LIMIT + move.at(index[i]).at(1);
-            int curr_count = node_map.at(next_idx_X).at(next_idx_Y);
-            
+            int next_node_X = nearestNodeX + LIMIT + move.at(index.at(i)).at(0);
+            int next_node_Y = nearestNodeY + LIMIT + move.at(index.at(i)).at(1);
+            int curr_count = node_map.at(next_node_X).at(next_node_Y);
+
             if (curr_count < 0)
             {
                 // It's an obstacle
@@ -137,8 +137,12 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY)
 
     if (desIdx < 8 || desIdx >= 0)
     {
-        nh.setParam("des_pos_x", nearestNodeX + move.at(desIdx).at(0));
-        nh.setParam("des_pos_y", nearestNodeY + move.at(desIdx).at(1));
+
+        int new_X = nearestNodeX + move.at(desIdx).at(0);
+        int new_Y = nearestNodeY + move.at(desIdx).at(1);
+        ROS_ERROR("Updated position for Robot %d: (%d,%d)", robot_ID, new_X, new_Y);
+        nh.setParam("des_pos_x", new_X);
+        nh.setParam("des_pos_y", new_Y);
         return true;
     }
     else
@@ -182,9 +186,8 @@ int main(int argc, char **argv)
     int robot_ID;
     nh.getParam("robot_ID", robot_ID);
     int initX, initY; // initial position
-    nh.getParam("dex_pos_x", initX); 
-    nh.getParam("des_pos_y", initY); 
-
+    nh.getParam("dex_pos_x", initX);
+    nh.getParam("des_pos_y", initY);
 
     // Subscribers & Services Clients
     ros::Subscriber odom_sub = nh.subscribe("odom", 1000, odomCallback);
@@ -194,7 +197,7 @@ int main(int argc, char **argv)
     visitedPub = nh.advertise<geometry_msgs::Point32>("/node_visited", 5);
 
     // Loop variables
-    double robotX, robotY;
+    double robotX, robotY, robotYaw, lastRobotX, lastRobotY, lastRobotYaw;
     int nearestNodeX, nearestNodeY;
     int lastNodeVisitedX = map_size * map_size;
     int lastNodeVisitedY = map_size * map_size;
@@ -237,9 +240,22 @@ int main(int argc, char **argv)
         ros::spinOnce();
 
         // Store current position
-        robotX = robotPose.position.x;
-        robotY = robotPose.position.y;
+        robotX = roundf(robotPose.position.x * 100) / 100;
+        robotY = roundf(robotPose.position.y * 100) / 100;
+        /* float roll  = robotPose.orientation.x;
+        float pitch = robotPose.orientation.y;
+        float yaw   = robotPose.orientation.z;
+        robotYaw = roundf(q.toRotationMatrix().eulerAngles(roll, pitch, yaw)*100)/100;
+        */
+        robotYaw = robotPose.orientation.z;
         // ROS_INFO("Current position: (%lf , %lf)",robotX,robotY);
+
+        // Check if we moved
+        bool notMoving = (robotX == lastRobotX && robotY == lastRobotX && robotYaw == lastRobotYaw);
+        // Then update last exact position
+        lastRobotX = robotX;
+        lastRobotY = robotY;
+        lastRobotYaw = robotYaw;
 
         // Check if we are in a new node
         if (inNode(robotX, robotY, nearestNodeX, nearestNodeY))
@@ -250,7 +266,7 @@ int main(int argc, char **argv)
         }
 
         // Check if we are in the map
-        if(abs(robotX) >= LIMIT + 1 || abs(robotY) >= LIMIT + 1)
+        if (abs(robotX) >= LIMIT + .5 || abs(robotY) >= LIMIT + .5)
         {
             ROS_INFO("Robot %d out of the map \n", robot_ID);
             // go towards the origin
@@ -262,11 +278,18 @@ int main(int argc, char **argv)
         // If we are in a new node in the map, publish the position of the node we just entered
         if (newNode)
         {
-            updateDesPos(nh, nearestNodeX, nearestNodeY);
+            updateDesPos(nh, nearestNodeX, nearestNodeY, robot_ID);
             node_visited.x = nearestNodeX;
             node_visited.y = nearestNodeY;
             node_visited.z = robot_ID;
             visitedPub.publish(node_visited);
+        }
+
+        // If we are not moving, just update the desired position
+        if (notMoving)
+        {
+            ROS_INFO("Robot %d not moving", robot_ID);
+            updateDesPos(nh, nearestNodeX, nearestNodeY, robot_ID);
         }
 
         rate.sleep();

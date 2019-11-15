@@ -29,6 +29,7 @@
     <arg name="des_x" value="5"/>
     <arg name="des_y" value="5"/>
 
+    <arg name="random_planning" value="true"/>
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>
@@ -46,6 +47,7 @@
     <arg name="des_x" value="5"/>
     <arg name="des_y" value="-5"/>
 
+    <arg name="random_planning" value="true"/>
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>
@@ -63,6 +65,7 @@
     <arg name="des_x" value="-5"/>
     <arg name="des_y" value="5"/>
 
+    <arg name="random_planning" value="true"/>
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>
@@ -80,6 +83,7 @@
     <arg name="des_x" value="-5"/>
     <arg name="des_y" value="-5"/>
 
+    <arg name="random_planning" value="true"/>
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>

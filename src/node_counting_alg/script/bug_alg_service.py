@@ -126,7 +126,7 @@ def main():
                 continue
 
             if state_ == 0:
-                if regions_['front'] > 0.05 and regions_['front'] < 0.4:
+                if regions_['front'] >= 0 and regions_['front'] < 0.4:
                     rospy.loginfo("Bug Algorithm - Obstacle detected\n")
                     change_state(1)
 

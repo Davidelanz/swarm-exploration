@@ -9,6 +9,7 @@
   <arg name="Z" default="0.1"/>
   <arg name="des_x" default="0"/>
   <arg name="des_y" default="0"/>
+  <arg name="random_planning" default="true"/>
   <arg name="pkg" default="node_counting_alg"/>
   <arg name="xacro_file" default="urdf/robot_nonhol.xacro"/>
   <arg name="xacro_name" default="nonhol"/>
@@ -32,6 +33,7 @@
     <param name="spawnY" value="$(arg Y)"/>
     <param name="des_pos_x" value="$(arg des_x)"/>
     <param name="des_pos_y" value="$(arg des_y)"/>
+    <param name="random" value="$(arg random_planning)"/>
 
     <node name="go_to_point_switch" pkg="node_counting_alg" type="go_to_point_service.py"/>
     <node name="wall_follow_switch" pkg="node_counting_alg" type="wall_follow_service.py"/>
@@ -40,7 +42,7 @@
     <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" args="-urdf -model $(arg ns)/$(arg xacro_name) -param robot_description -x  $(arg X) -y  $(arg Y) -z  $(arg Z)"/>
 
     <node name="controller" pkg="node_counting_alg" type="controller_node.py"/>
-    <node name="planner" pkg="node_counting_alg" type="planner_node"/>
+    <node name="planner" pkg="node_counting_alg" type="planner_node" output="screen"/>
     <!--<node name="basic_planner" pkg="node_counting_alg" type="basic_planner_node"/>--> 
     <!--<node name="mapper" pkg="node_counting_alg" type="mapper_node" />-->
   </group>

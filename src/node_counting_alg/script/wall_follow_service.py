@@ -119,16 +119,17 @@ def find_wall():
     # random values to avoid symmetric robot-robot detections and mirroring
     # for both ranges there is a little contribute in the other sense in order 
     # to disrupt heavy simmetries
-    msg.linear.x = float(random.randrange(-math.ceil(linear_vel*10),math.ceil(linear_vel*100),1))/100
-    msg.angular.z = float(random.randrange(-math.ceil(linear_vel*20),math.ceil(linear_vel*5),1))/100
-        # negative because you have to turn left to look for the wall:
+    vel_value = float(random.randrange(0,math.ceil(linear_vel*100),1))/100
+    msg.linear.x = vel_value
+    msg.angular.z = - vel_value/10
     return msg
 
 
 def turn_left():
     msg = Twist()
-    msg.angular.x = float(random.randrange(-math.ceil(linear_vel*10),math.ceil(linear_vel*50),1))/100
-    msg.angular.z = float(random.randrange(-math.ceil(linear_vel*10),math.ceil(linear_vel*50),1))/100
+    vel_value = float(random.randrange(0,math.ceil(linear_vel*100),1))/100
+    msg.linear.x = vel_value
+    msg.angular.z = vel_value/10
     return msg
 
 

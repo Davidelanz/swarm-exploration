@@ -22,17 +22,17 @@
     <arg name="ns" value="robot1"/>
     <arg name="robID" value="1"/>
 
-    <arg name="X" value="10"/>
-    <arg name="Y" value="10"/>
+    <arg name="X" value="6"/>
+    <arg name="Y" value="5"/>
     <arg name="Z" value="0"/>
-    
+
     <arg name="des_x" value="5"/>
     <arg name="des_y" value="5"/>
-    
+
+    <arg name="random_planning" value="false"/>
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>
   </include>
-
 
 </launch>
