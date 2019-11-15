@@ -168,7 +168,7 @@ def main():
                 elif  notMoving and not frontFree:
                     rospy.loginfo("Bug Algorithm - Robot stucked\n")
                     msg = Twist()
-                    msg.linear.x = -1
+                    msg.linear.x = - rospy.get_param('/lin_vel')/2
                     msg.angular.z = 0
                     pub_.publish(msg)
                     continue

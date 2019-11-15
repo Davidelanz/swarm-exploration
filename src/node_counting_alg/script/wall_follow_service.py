@@ -50,13 +50,12 @@ def wall_follower_switch(req):
 def clbk_laser(msg):
     global regions_
     regions_ = {
-        # 'right': min(min(msg.ranges[  0:143]), 10),
-        # 'fright':min(min(msg.ranges[144:287]), 10),
-        'right': min(min(msg.ranges[0:287]), 10),
+        'right': min(min(msg.ranges[  0:143]), 10),
+        'fright':min(min(msg.ranges[144:287]), 10),
+        'fright': min(min(msg.ranges[0:287]), 10),
         'front':  min(min(msg.ranges[288:431]), 10),
-        'left':  min(min(msg.ranges[432:713]), 10),
-        # 'fleft': min(min(msg.ranges[432:575]), 10),
-        # 'left':  min(min(msg.ranges[576:713]), 10),
+        'fleft': min(min(msg.ranges[432:575]), 10),
+        'left':  min(min(msg.ranges[576:713]), 10),
     }
 
     take_action()
@@ -78,37 +77,37 @@ def take_action():
     msg.angular.z = 0
 
     state_description = ''
-    d = .4
+    d = .6
 
-    if regions['front'] > d and regions['left'] > d and regions['right'] > d:
+    if regions['front'] > d and regions['fleft'] > d and regions['fright'] > d:
         state_description = 'case 1 - nothing'
         change_state(0)  # find wall
 
-    elif regions['front'] < d and regions['left'] > d and regions['right'] > d:
+    elif regions['front'] < d and regions['fleft'] > d and regions['fright'] > d:
         state_description = 'case 2 - front'
         change_state(1)  # turn left
 
-    elif regions['front'] > d and regions['left'] > d and regions['right'] < d:
+    elif regions['front'] > d and regions['fleft'] > d and regions['fright'] < d:
         state_description = 'case 3 - right'
         change_state(2)  # follow straight the wall
 
-    elif regions['front'] > d and regions['left'] < d and regions['right'] > d:
+    elif regions['front'] > d and regions['fleft'] < d and regions['fright'] > d:
         state_description = 'case 4 - left'
         change_state(0)  # find wall
 
-    elif regions['front'] < d and regions['left'] > d and regions['right'] < d:
+    elif regions['front'] < d and regions['fleft'] > d and regions['fright'] < d:
         state_description = 'case 5 - front and right'
         change_state(1)  # turn left
 
-    elif regions['front'] < d and regions['left'] < d and regions['right'] > d:
+    elif regions['front'] < d and regions['fleft'] < d and regions['fright'] > d:
         state_description = 'case 6 - front and left'
         change_state(1)  # turn left
 
-    elif regions['front'] < d and regions['left'] < d and regions['right'] < d:
+    elif regions['front'] < d and regions['fleft'] < d and regions['fright'] < d:
         state_description = 'case 7 - front and left and right'
         change_state(1)  # turn left
 
-    elif regions['front'] > d and regions['left'] < d and regions['right'] < d:
+    elif regions['front'] > d and regions['fleft'] < d and regions['fright'] < d:
         state_description = 'case 8 - left and right'
         change_state(0)  # find wall
 
@@ -127,27 +126,32 @@ def find_wall():
     # for both ranges there is a little contribute in the other sense in order
     # to disrupt heavy simmetries
 
-    die = random.randint(0, 5)
+    die = random.randint(0, 9)
 
-    if die > 2:
-        msg.linear.x = linear_vel
+    if die > 2: #turn right  (8 out of 10)
+        msg.linear.x = linear_vel*4
         msg.angular.z = - angular_vel
-    elif die > 1:
-        msg.linear.x = linear_vel
-        msg.angular.z = angular_vel
-    else:
-        msg.linear.x = - linear_vel
-        msg.angular.z = angular_vel
+    elif die > 1: #turn left (1 out of 10)
+        msg.linear.x = linear_vel/2
+        msg.angular.z = angular_vel/2
+    else: #go back left (1 out of 10)
+        msg.linear.x = - linear_vel/2
+        msg.angular.z = angular_vel/2
     return msg
 
 
 def turn_left():
     msg = Twist()
-    #vel_percent= random.randrange(0,100)
-    #msg.linear.x = linear_vel * (vel_percent / 100)
-    #msg.angular.z = linear_vel * (vel_percent / 100)
-    msg.linear.x = linear_vel
-    msg.angular.z = angular_vel
+    die = random.randint(0, 9)
+    if die > 2: #turn left (8 out of 10)
+        msg.linear.x = linear_vel/10
+        msg.angular.z = angular_vel*10
+    elif die > 1: #turn right (1 out of 10)
+        msg.linear.x = linear_vel/20
+        msg.angular.z = - angular_vel/2
+    else: #go back right (1 out of 10)
+        msg.linear.x = - linear_vel/2
+        msg.angular.z = - angular_vel/2
     return msg
 
 

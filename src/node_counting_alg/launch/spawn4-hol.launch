@@ -3,12 +3,12 @@
 
   <!-- Spawn the world-->
   <include file="$(find node_counting_alg)/launch/world_init.launch">
-    <arg name="world" value="complex" />
+    <arg name="world" value="easy" />
   </include>
 
   <!-- Set the velocities keep the ratio near 10:1 -->
-  <param name="lin_vel" value=".8"/>
-  <param name="ang_vel" value=".4"/>
+  <param name="lin_vel" value=".9"/>
+  <param name="ang_vel" value=".1"/>
 
   <!-- Pass the map size -->
   <param name="map_size" value="11"/>
@@ -29,7 +29,7 @@
     <arg name="des_x" value="5"/>
     <arg name="des_y" value="5"/>
 
-    <arg name="random_planning" value="true"/>
+    <arg name="random_planning" value="false"/>
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>
@@ -47,7 +47,7 @@
     <arg name="des_x" value="5"/>
     <arg name="des_y" value="-5"/>
 
-    <arg name="random_planning" value="true"/>
+    <arg name="random_planning" value="false"/>
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>
@@ -65,7 +65,7 @@
     <arg name="des_x" value="-5"/>
     <arg name="des_y" value="5"/>
 
-    <arg name="random_planning" value="true"/>
+    <arg name="random_planning" value="false"/>
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>
@@ -83,7 +83,7 @@
     <arg name="des_x" value="-5"/>
     <arg name="des_y" value="-5"/>
 
-    <arg name="random_planning" value="true"/>
+    <arg name="random_planning" value="false"/>
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>

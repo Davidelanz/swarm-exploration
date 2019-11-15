@@ -14,7 +14,7 @@ import math
 
 # Navigation velocities
 linear_vel = rospy.get_param('/lin_vel')
-angular_vel = rospy.get_param('/ang_vel')
+angular_vel = rospy.get_param('/ang_vel') * 5
 # robot state variables
 position_ = Point()
 yaw_ = 0

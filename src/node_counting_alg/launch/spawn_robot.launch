@@ -9,7 +9,7 @@
   <arg name="Z" default="0.1"/>
   <arg name="des_x" default="0"/>
   <arg name="des_y" default="0"/>
-  <arg name="random_planning" default="true"/>
+  <arg name="random_planning" default="false"/>
   <arg name="pkg" default="node_counting_alg"/>
   <arg name="xacro_file" default="urdf/robot_nonhol.xacro"/>
   <arg name="xacro_name" default="nonhol"/>
