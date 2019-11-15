@@ -42,7 +42,7 @@
     <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" args="-urdf -model $(arg ns)/$(arg xacro_name) -param robot_description -x  $(arg X) -y  $(arg Y) -z  $(arg Z)"/>
 
     <node name="controller" pkg="node_counting_alg" type="controller_node.py"/>
-    <node name="planner" pkg="node_counting_alg" type="planner_node" output="screen"/>
+    <node name="planner" pkg="node_counting_alg" type="planner_node" />
     <!--<node name="basic_planner" pkg="node_counting_alg" type="basic_planner_node"/>--> 
     <!--<node name="mapper" pkg="node_counting_alg" type="mapper_node" />-->
   </group>

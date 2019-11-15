@@ -6,9 +6,9 @@
     <arg name="world" value="complex" />
   </include>
 
-  <!-- Set the velocities -->
-  <param name="lin_vel" value=".8"/>
-  <param name="ang_vel" value=".8"/>
+  <!-- Set the velocities keep the ratio 10:1 -->
+  <param name="lin_vel" value="3.0"/>
+  <param name="ang_vel" value=".3"/>
 
   <!-- Pass the map size -->
   <param name="map_size" value="11"/>

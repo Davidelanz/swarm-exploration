@@ -2,7 +2,7 @@
 
 import rospy
 # import ros message
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, Twist
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 from tf import transformations
@@ -19,12 +19,16 @@ srv_client_wall_follower_ = None
 yaw_ = 0
 yaw_error_allowed_ = 5 * (math.pi / 180)  # 5 degrees
 position_ = Point()
+sum_twist_= .0
 desired_position_ = Point()
 desired_position_.x = rospy.get_param('des_pos_x')
 desired_position_.y = rospy.get_param('des_pos_y')
 desired_position_.z = 0
 regions_ = None
-state_desc_ = ['Go to point', 'wall following']
+state_dict_ = {
+    0: 'Go to point',
+    1: 'Wall following',
+}
 state_ = 0
 # 0 - go to point
 # 1 - wall following
@@ -48,7 +52,7 @@ def bug_alg_switch(req):
 
 
 def clbk_odom(msg):
-    global position_, yaw_
+    global position_, yaw_ ,sum_twist_
 
     # position
     position_ = msg.pose.pose.position
@@ -62,6 +66,10 @@ def clbk_odom(msg):
     euler = transformations.euler_from_quaternion(quaternion)
     yaw_ = euler[2]
 
+    # velocity
+    sum_twist_ =  msg.twist.twist.linear .x + msg.twist.twist.linear.y+ msg.twist.twist.linear.z + msg.twist.twist.angular.x + msg.twist.twist.angular.y+ msg.twist.twist.angular.z
+
+    
 
 def clbk_laser(msg):
     global regions_
@@ -75,10 +83,10 @@ def clbk_laser(msg):
 
 
 def change_state(state):
-    global state_, state_desc_
+    global state_, state_dict_
     global srv_client_wall_follower_, srv_client_go_to_point_
     state_ = state
-    rospy.loginfo("Bug Algorithm - %s", state_desc_[state])
+    rospy.loginfo("Bug Algorithm - %s", state_dict_[state])
     if state_ == 0:
         resp = srv_client_go_to_point_(True)
         resp = srv_client_wall_follower_(False)
@@ -96,11 +104,12 @@ def normalize_angle(angle):
 # _____________________________________________________________________
 
 def main():
-    global regions_, position_, desired_position_, state_, yaw_, yaw_error_allowed_
+    global regions_, position_, sum_twist_, desired_position_, state_, yaw_, yaw_error_allowed_
     global srv_client_go_to_point_, srv_client_wall_follower_
 
     rospy.init_node('bug_alg')
-    rospy.loginfo("Bug algorithm service node started in state: %s" % state_desc_[state_])
+    rospy.loginfo("Bug algorithm service node started in state: %s" %
+                  state_dict_[state_])
 
     sub_laser = rospy.Subscriber('front_laser/scan', LaserScan, clbk_laser)
     sub_odom = rospy.Subscriber('odom', Odometry, clbk_odom)
@@ -108,6 +117,8 @@ def main():
     srv_client_go_to_point_ = rospy.ServiceProxy('go_to_point_switch', SetBool)
     srv_client_wall_follower_ = rospy.ServiceProxy(
         'wall_follower_switch', SetBool)
+
+    pub_ = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
     srv = rospy.Service(rospy.get_namespace() +
                         'bug_alg_switch', SetBool, bug_alg_switch)
@@ -126,11 +137,13 @@ def main():
                 continue
 
             if state_ == 0:
+
                 if regions_['front'] >= 0 and regions_['front'] < 0.4:
                     rospy.loginfo("Bug Algorithm - Obstacle detected\n")
                     change_state(1)
 
             elif state_ == 1:
+
                 desired_position_.x = rospy.get_param('des_pos_x')
                 desired_position_.y = rospy.get_param('des_pos_y')
                 desired_yaw = math.atan2(
@@ -144,14 +157,21 @@ def main():
                     err_yaw = err_yaw+2*math.pi
 
                 frontFree = regions_['front'] > 1.5
-                rightFree = regions_['fright'] > 1
+                rightFree = regions_['fright'] > 1 and regions_['right'] > 1
                 goalAhead = math.fabs(err_yaw) < 0.05
-
                 okGoAhead = (frontFree and goalAhead) or (frontFree and rightFree)
+                notMoving = sum_twist_ < 0.1
 
                 if okGoAhead:
                     rospy.loginfo("Bug Algorithm - Going ahead\n")
                     change_state(0)
+                elif  notMoving and not frontFree:
+                    rospy.loginfo("Bug Algorithm - Robot stucked\n")
+                    msg = Twist()
+                    msg.linear.x = -1
+                    msg.angular.z = 0
+                    pub_.publish(msg)
+                    continue
 
         rate.sleep()
 

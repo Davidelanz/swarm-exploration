@@ -140,7 +140,7 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int ro
 
         int new_X = nearestNodeX + move.at(desIdx).at(0);
         int new_Y = nearestNodeY + move.at(desIdx).at(1);
-        ROS_ERROR("Updated position for Robot %d: (%d,%d)", robot_ID, new_X, new_Y);
+        ROS_INFO("Updated position for Robot %d: (%d,%d)", robot_ID, new_X, new_Y);
         nh.setParam("des_pos_x", new_X);
         nh.setParam("des_pos_y", new_Y);
         return true;
