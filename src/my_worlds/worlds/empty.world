@@ -1,5 +1,6 @@
+<?xml version='1.0'?>
 <sdf version='1.6'>
-  <world name='default'>
+  <world name='empty_world'>
     <light name='sun' type='directional'>
       <cast_shadows>1</cast_shadows>
       <pose frame=''>0 0 10 0 -0 0</pose>
@@ -72,6 +73,9 @@
       <ambient>0.4 0.4 0.4 1</ambient>
       <background>0.7 0.7 0.7 1</background>
       <shadows>1</shadows>
+      <sky>
+        <sunrise>5</sunrise>
+      </sky>
     </scene>
     <spherical_coordinates>
       <surface_model>EARTH_WGS84</surface_model>
@@ -81,15 +85,75 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
     <state world_name='default'>
-      <sim_time>607 257000000</sim_time>
-      <real_time>16 278143650</real_time>
-      <wall_time>1573594850 193916739</wall_time>
-      <iterations>15931</iterations>
+      <sim_time>1210 9000000</sim_time>
+      <real_time>137 878963591</real_time>
+      <wall_time>1573761774 366572976</wall_time>
+      <iterations>119948</iterations>
+      <model name='Construction Barrel_6'>
+        <pose frame=''>-3.92318 -0.970884 0 0 1e-06 0.000231</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>-3.92318 -0.970884 0 0 1e-06 0.000231</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>-9.21726 4.39701 5.74017 -1.54534 1.21999 3.03</acceleration>
+          <wrench>-4608.63 2198.5 2870.09 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='coke_can_clone_1'>
+        <pose frame=''>0.111722 -2.80158 0.276147 -0.040592 0.0005 -0.066579</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>0.111722 -2.80158 0.276147 -0.040592 0.0005 -0.066579</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0.048257 0.095516 -0.023919 -0.185144 0.254327 -2.28232</acceleration>
+          <wrench>0.01882 0.037251 -0.009328 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='coke_can_clone_2'>
+        <pose frame=''>2.24233 0.867586 0.276147 -0.040592 0.000499 -0.066723</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>2.24233 0.867586 0.276147 -0.040592 0.000499 -0.066723</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>-0.110629 -0.148789 0.020426 0.301019 -0.399978 -2.95194</acceleration>
+          <wrench>-0.043145 -0.058028 0.007966 0 -0 0</wrench>
+        </link>
+      </model>
       <model name='ground_plane'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
           <pose frame=''>0 0 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='modified_jersey_barrier'>
+        <pose frame=''>1.31946 -0.060878 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>1.31946 -0.060878 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='modified_jersey_barrier_clone'>
+        <pose frame=''>-2.507 4.00835 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>-2.507 4.00835 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='modified_jersey_barrier_clone_0'>
+        <pose frame=''>5.01434 -0.479477 0 0 0 -1.57383</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>5.01434 -0.479477 0 0 0 -1.57383</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -101,10 +165,11 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>-3.13808 -8.63824 43.7985 0 1.25712 1.53471</pose>
+        <pose frame=''>0 0 40 1.5706 1.5706 0</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
+      <grid name="cell_count" value ="10"></grid>
     </gui>
     <audio>
       <device>default</device>

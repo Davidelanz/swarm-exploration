@@ -126,11 +126,13 @@ def main():
                 continue
 
             if state_ == 0:
-                if regions_['front'] > 0 and regions_['front'] < 0.4:
+                if regions_['front'] > 0.05 and regions_['front'] < 0.4:
                     rospy.loginfo("Bug Algorithm - Obstacle detected\n")
                     change_state(1)
 
             elif state_ == 1:
+                desired_position_.x = rospy.get_param('des_pos_x')
+                desired_position_.y = rospy.get_param('des_pos_y')
                 desired_yaw = math.atan2(
                     desired_position_.y - position_.y, desired_position_.x - position_.x)
                 err_yaw = normalize_angle(desired_yaw - yaw_)
@@ -142,10 +144,10 @@ def main():
                     err_yaw = err_yaw+2*math.pi
 
                 frontFree = regions_['front'] > 1.5
-                wallright = regions_['fright'] < 0.6
+                rightFree = regions_['fright'] > 1
                 goalAhead = math.fabs(err_yaw) < 0.05
 
-                okGoAhead = frontFree and goalAhead
+                okGoAhead = (frontFree and goalAhead) or (frontFree and rightFree)
 
                 if okGoAhead:
                     rospy.loginfo("Bug Algorithm - Going ahead\n")

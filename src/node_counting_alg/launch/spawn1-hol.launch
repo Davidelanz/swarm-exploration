@@ -3,7 +3,7 @@
 
   <!-- Spawn the world-->
   <include file="$(find node_counting_alg)/launch/world_init.launch">
-    <arg name="world" value="empty" />
+    <arg name="world" value="complex" />
   </include>
 
   <!-- Set the velocities -->
@@ -15,19 +15,24 @@
 
   <!-- Launch the map interpolator -->
   <param name="num_robot" value="1"/>
-  <node name="common_mapper" pkg="node_counting_alg" type="common_mapper_node"/>
+  <node name="common_mapper" pkg="node_counting_alg" type="common_mapper_node" output="screen"/>
 
-  <!-- Spawn the robot -->
+  <!-- Spawn robot 1 -->
   <include file="$(find node_counting_alg)/launch/spawn_robot.launch">
     <arg name="ns" value="robot1"/>
-    <arg name="X" value="0"/>
-    <arg name="Y" value="0"/>
+    <arg name="robID" value="1"/>
+
+    <arg name="X" value="10"/>
+    <arg name="Y" value="10"/>
     <arg name="Z" value="0"/>
-    <arg name="des_x" value="0"/>
-    <arg name="des_y" value="0"/>
+    
+    <arg name="des_x" value="5"/>
+    <arg name="des_y" value="5"/>
+    
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>
   </include>
+
 
 </launch>

@@ -1,5 +1,6 @@
+<?xml version='1.0'?>
 <sdf version='1.6'>
-  <world name='default'>
+  <world name='complex_world'>
     <light name='sun' type='directional'>
       <cast_shadows>1</cast_shadows>
       <pose frame=''>0 0 10 0 -0 0</pose>
@@ -72,6 +73,9 @@
       <ambient>0.4 0.4 0.4 1</ambient>
       <background>0.7 0.7 0.7 1</background>
       <shadows>1</shadows>
+      <sky>
+        <sunrise>5</sunrise>
+      </sky>
     </scene>
     <spherical_coordinates>
       <surface_model>EARTH_WGS84</surface_model>
@@ -85,7 +89,7 @@
       <real_time>137 878963591</real_time>
       <wall_time>1573761774 366572976</wall_time>
       <iterations>119948</iterations>
-      <model name='Construction Barrel_6'>
+      <model name='Construction Barrel'>
         <pose frame=''>-3.92318 -0.970884 0 0 1e-06 0.000231</pose>
         <scale>1 1 1</scale>
         <link name='link'>
@@ -95,7 +99,7 @@
           <wrench>-4608.63 2198.5 2870.09 0 -0 0</wrench>
         </link>
       </model>
-      <model name='coke_can_clone_1'>
+      <model name='coke_can_1'>
         <pose frame=''>0.111722 -2.80158 0.276147 -0.040592 0.0005 -0.066579</pose>
         <scale>1 1 1</scale>
         <link name='link'>
@@ -105,7 +109,7 @@
           <wrench>0.01882 0.037251 -0.009328 0 -0 0</wrench>
         </link>
       </model>
-      <model name='coke_can_clone_2'>
+      <model name='coke_can_2'>
         <pose frame=''>2.24233 0.867586 0.276147 -0.040592 0.000499 -0.066723</pose>
         <scale>1 1 1</scale>
         <link name='link'>
@@ -117,7 +121,7 @@
       </model>
       <model name='ground_plane'>
         <pose frame=''>0 0 0 0 -0 0</pose>
-        <scale>1 1 1</scale>
+        <scale>.5 .5 .5</scale>
         <link name='link'>
           <pose frame=''>0 0 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
@@ -125,7 +129,7 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='modified_jersey_barrier'>
+      <model name='modified_jersey_barrier_1'>
         <pose frame=''>1.31946 -0.060878 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
@@ -135,7 +139,7 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='modified_jersey_barrier_clone'>
+      <model name='modified_jersey_barrier_2'>
         <pose frame=''>-2.507 4.00835 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
@@ -145,7 +149,7 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='modified_jersey_barrier_clone_0'>
+      <model name='modified_jersey_barrier_3'>
         <pose frame=''>5.01434 -0.479477 0 0 0 -1.57383</pose>
         <scale>1 1 1</scale>
         <link name='link'>
@@ -161,12 +165,13 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>0 0 18.7056 3.14159 1.57079 3.14159</pose>
+        <pose frame=''>0 0 40 1.5706 1.5706 3.14</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
+      <grid>true</grid>
     </gui>
-    <model name='Construction Barrel_6'>
+    <model name='Construction Barrel'>
       <link name='link'>
         <inertial>
           <pose frame=''>0 0 0.4 0 -0 0</pose>
@@ -217,7 +222,7 @@
       <device>default</device>
     </audio>
     <wind/>
-    <model name='coke_can_clone_1'>
+    <model name='coke_can_1'>
       <link name='link'>
         <inertial>
           <pose frame=''>-0.01 -0.012 0.15 0 -0 0</pose>
@@ -274,7 +279,7 @@
       </link>
       <pose frame=''>0.103641 -2.81191 0.276779 2.7e-05 -0.023482 -0.042172</pose>
     </model>
-    <model name='coke_can_clone_2'>
+    <model name='coke_can_2'>
       <link name='link'>
         <inertial>
           <pose frame=''>-0.01 -0.012 0.15 0 -0 0</pose>
@@ -331,7 +336,7 @@
       </link>
       <pose frame=''>2.23425 0.857256 0.276779 2.7e-05 -0.023482 -0.042172</pose>
     </model>
-    <model name='modified_jersey_barrier'>
+    <model name='modified_jersey_barrier_1'>
       <link name='link'>
         <self_collide>0</self_collide>
         <kinematic>0</kinematic>
@@ -425,7 +430,7 @@
       <allow_auto_disable>1</allow_auto_disable>
       <pose frame=''>1.76519 -0.393386 0 0 -0 0</pose>
     </model>
-    <model name='modified_jersey_barrier_clone'>
+    <model name='modified_jersey_barrier_2'>
       <link name='link'>
         <self_collide>0</self_collide>
         <kinematic>0</kinematic>
@@ -519,7 +524,7 @@
       <allow_auto_disable>1</allow_auto_disable>
       <pose frame=''>-2.507 4.00835 0 0 -0 0</pose>
     </model>
-    <model name='modified_jersey_barrier_clone_0'>
+    <model name='modified_jersey_barrier_3'>
       <link name='link'>
         <self_collide>0</self_collide>
         <kinematic>0</kinematic>

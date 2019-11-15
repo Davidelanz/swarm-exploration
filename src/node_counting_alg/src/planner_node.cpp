@@ -59,19 +59,6 @@ bool inNode(double robotX, double robotY, int &nearestNodeX, int &nearestNodeY)
     return (dist <= 0.2);
 }
 
-bool inInitPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY) 
-//go to an init position specified by des_pos_X and des_pos_Y as a parameter at launch time
-{
-    // Check if position is reached
-    int initX, initY;
-    nh.getParam("dex_pos_x", initX); 
-    //because the first desired position is the initial position due to the fact
-    nh.getParam("des_pos_y", initY); 
-    //it won't be updated until the initial position is reached
-
-    return (nearestNodeX == initX || nearestNodeY == initY);
-}
-
 bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY)
 {
     // Array of possibile moves alongside all 8 direction                                                     //When the robot is not in "RandomMovement" mode
@@ -124,9 +111,15 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY)
             int next_idx_X = nearestNodeX + LIMIT + move.at(index[i]).at(0);
             int next_idx_Y = nearestNodeY + LIMIT + move.at(index[i]).at(1);
             int curr_count = node_map.at(next_idx_X).at(next_idx_Y);
-            // If the next node is 0 just go there
-            if (curr_count == 0)
+            
+            if (curr_count < 0)
             {
+                // It's an obstacle
+                continue;
+            }
+            else if (curr_count == 0)
+            {
+                // If the next node is 0 just go there
                 desIdx = i;
                 break;
             }
@@ -182,11 +175,16 @@ int main(int argc, char **argv)
 {
 
     // Node Initialization
+    srand(time(NULL));
     ros::init(argc, argv, "basic_planner");
     ros::NodeHandle nh;
 
     int robot_ID;
     nh.getParam("robot_ID", robot_ID);
+    int initX, initY; // initial position
+    nh.getParam("dex_pos_x", initX); 
+    nh.getParam("des_pos_y", initY); 
+
 
     // Subscribers & Services Clients
     ros::Subscriber odom_sub = nh.subscribe("odom", 1000, odomCallback);
@@ -205,6 +203,8 @@ int main(int argc, char **argv)
     geometry_msgs::Point32 node_visited;
 
     ros::Rate rate(50);
+
+    // Approaching to the map phase: reach initial position
     while (ros::ok())
     {
         // Perform callbacks
@@ -224,21 +224,42 @@ int main(int argc, char **argv)
         }
 
         // If we're not in the desired intial position, keep moving towards it
-        if (!inInitPos(nh, nearestNodeX, nearestNodeY))
-            continue;
+        if (nearestNodeX != initX && nearestNodeY != initY)
+            break;
+
+        rate.sleep();
+    }
+
+    // Exploration phase
+    while (ros::ok())
+    {
+        // Perform callbacks
+        ros::spinOnce();
+
+        // Store current position
+        robotX = robotPose.position.x;
+        robotY = robotPose.position.y;
+        // ROS_INFO("Current position: (%lf , %lf)",robotX,robotY);
+
+        // Check if we are in a new node
+        if (inNode(robotX, robotY, nearestNodeX, nearestNodeY))
+        {
+            newNode = ((lastNodeVisitedX != nearestNodeX) || (lastNodeVisitedY != nearestNodeY));
+            lastNodeVisitedX = nearestNodeX;
+            lastNodeVisitedY = nearestNodeY;
+        }
 
         // Check if we are in the map
-        try
+        if(abs(robotX) >= LIMIT + 1 || abs(robotY) >= LIMIT + 1)
         {
-            node_map.at(nearestNodeX+LIMIT).at(nearestNodeY+LIMIT);
-        }
-        catch(const std::exception& e)
-        {
-            std::cerr << "Robot" << robot_ID << "out of the map" << '\n';
+            ROS_INFO("Robot %d out of the map \n", robot_ID);
+            // go towards the origin
+            nh.setParam("des_pos_x", 0);
+            nh.setParam("des_pos_y", 0);
             continue;
         }
 
-        // If we in a new node in the map, publish the position of the node we just entered
+        // If we are in a new node in the map, publish the position of the node we just entered
         if (newNode)
         {
             updateDesPos(nh, nearestNodeX, nearestNodeY);

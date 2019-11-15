@@ -68,57 +68,67 @@ def change_state(state):
 def take_action():
     global regions_
     regions = regions_
+
     msg = Twist()
-    linear_x = 0
-    angular_z = 0
-    state_description = ''
+    msg.linear.x = 0
+    msg.angular.z = 0
     
+    state_description = ''
     d = .4
     
     if regions['front'] > d and regions['fleft'] > d and regions['fright'] > d:
         state_description = 'case 1 - nothing'
-        change_state(0)
+        change_state(0) #find wall
+
     elif regions['front'] < d and regions['fleft'] > d and regions['fright'] > d:
         state_description = 'case 2 - front'
-        change_state(1)
+        change_state(1) #turn left
+        
     elif regions['front'] > d and regions['fleft'] > d and regions['fright'] < d:
         state_description = 'case 3 - fright'
-        change_state(2)
+        change_state(2) #follow straight the wall
+        
     elif regions['front'] > d and regions['fleft'] < d and regions['fright'] > d:
         state_description = 'case 4 - fleft'
-        change_state(0)
+        change_state(0) #find wall
+
     elif regions['front'] < d and regions['fleft'] > d and regions['fright'] < d:
         state_description = 'case 5 - front and fright'
-        change_state(1)
+        change_state(1) #turn left
+
     elif regions['front'] < d and regions['fleft'] < d and regions['fright'] > d:
         state_description = 'case 6 - front and fleft'
-        change_state(1)
+        change_state(1) #turn left
+
     elif regions['front'] < d and regions['fleft'] < d and regions['fright'] < d:
         state_description = 'case 7 - front and fleft and fright'
-        change_state(1)
+        change_state(1) #turn left
+
     elif regions['front'] > d and regions['fleft'] < d and regions['fright'] < d:
         state_description = 'case 8 - fleft and fright'
-        change_state(0)
+        change_state(0) #find wall
+        
     else:
         state_description = 'unknown case'
         rospy.loginfo(regions)
 
+    return msg
 
 def find_wall():
     msg = Twist()
     # random values to avoid symmetric robot-robot detections and mirroring
-    msg.linear.x = float(random.randrange(-math.ceil(linear_vel*10),math.ceil(linear_vel*100),1))/100
-    # negative because you have to turn right to try follow anyway the wall
-    msg.angular.z = float(random.randrange(-math.ceil(linear_vel*10),math.ceil(linear_vel*100),1))/100
     # for both ranges there is a little contribute in the other sense in order 
     # to disrupt heavy simmetries
+    msg.linear.x = float(random.randrange(-math.ceil(linear_vel*10),math.ceil(linear_vel*100),1))/100
+    msg.angular.z = float(random.randrange(-math.ceil(linear_vel*20),math.ceil(linear_vel*5),1))/100
+        # negative because you have to turn left to look for the wall:
     return msg
 
 
 def turn_left():
     msg = Twist()
-    msg.angular.x = 0
-    msg.angular.z = linear_vel/3
+    msg.angular.x = float(random.randrange(-math.ceil(linear_vel*10),math.ceil(linear_vel*50),1))/100
+    msg.angular.z = float(random.randrange(-math.ceil(linear_vel*10),math.ceil(linear_vel*50),1))/100
     return msg
 
 
@@ -135,6 +145,8 @@ def follow_the_wall():
 
 def main():
     global pub_, active_
+
+    random.seed()
     
     rospy.init_node('wall_follow')
     rospy.loginfo("Wall following service node started in state: %s" % state_dict_[state_])

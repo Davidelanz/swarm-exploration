@@ -7,14 +7,14 @@
   </include>
 
   <!-- Set the velocities -->
-  <param name="lin_vel" value=".8"/>
-  <param name="ang_vel" value=".8"/>
+  <param name="lin_vel" value="2.8"/>
+  <param name="ang_vel" value="2.8"/>
 
   <!-- Pass the map size -->
   <param name="map_size" value="11"/>
 
   <!-- Launch the map interpolator -->
-  <param name="num_robot" value="2"/>
+  <param name="num_robot" value="4"/>
   <node name="common_mapper" pkg="node_counting_alg" type="common_mapper_node" output="screen"/>
 
   <!-- Spawn robot 1 -->
@@ -25,10 +25,10 @@
     <arg name="X" value="10"/>
     <arg name="Y" value="10"/>
     <arg name="Z" value="0"/>
-    
+
     <arg name="des_x" value="5"/>
     <arg name="des_y" value="5"/>
-    
+
     <arg name="pkg" value="node_counting_alg"/>
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>
@@ -39,7 +39,41 @@
     <arg name="ns" value="robot2"/>
     <arg name="robID" value="2"/>
 
-    <arg name="X" value="-12"/>
+    <arg name="X" value="5"/>
+    <arg name="Y" value="-6"/>
+    <arg name="Z" value="0"/>
+
+    <arg name="des_x" value="5"/>
+    <arg name="des_y" value="-5"/>
+
+    <arg name="pkg" value="node_counting_alg"/>
+    <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
+    <arg name="xacro_name" value="hol"/>
+  </include>
+
+  <!-- Spawn robot 3 -->
+  <include file="$(find node_counting_alg)/launch/spawn_robot.launch">
+    <arg name="ns" value="robot3"/>
+    <arg name="robID" value="3"/>
+
+    <arg name="X" value="-6"/>
+    <arg name="Y" value="10"/>
+    <arg name="Z" value="0"/>
+
+    <arg name="des_x" value="-5"/>
+    <arg name="des_y" value="5"/>
+
+    <arg name="pkg" value="node_counting_alg"/>
+    <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
+    <arg name="xacro_name" value="hol"/>
+  </include>
+
+  <!-- Spawn robot 4 -->
+  <include file="$(find node_counting_alg)/launch/spawn_robot.launch">
+    <arg name="ns" value="robot4"/>
+    <arg name="robID" value="4"/>
+
+    <arg name="X" value="-10"/>
     <arg name="Y" value="-12"/>
     <arg name="Z" value="0"/>
 
@@ -50,6 +84,5 @@
     <arg name="xacro_file" value="urdf/robot_hol.xacro"/>
     <arg name="xacro_name" value="hol"/>
   </include>
-
 
 </launch>
