@@ -4,6 +4,7 @@
 #include "std_msgs/String.h"
 #include "geometry_msgs/Point32.h"
 #include <std_msgs/Float64.h>
+#include <sensor_msgs/LaserScan.h>
 #include <cmath>
 #include <iostream>
 #include <cstdio>
@@ -19,6 +20,7 @@ ros::Publisher pub;
 geometry_msgs::Pose robotPose;
 const int map_size = 2 * LIMIT + 1;
 vector<vector<int>> node_map(map_size, vector<int>(map_size, 0));
+float frontLaser;
 
 // Prototypes
 vector<vector<int>> mapDecoder(string s);
@@ -34,6 +36,10 @@ void mapCallback(const std_msgs::String::ConstPtr &msg)
     node_map = mapDecoder(msg->data);
 }
 
+void laserCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
+{
+    frontLaser = min(*min_element(&(msg->ranges.at(0)), &(msg->ranges.at(143))), 10.0f);
+}
 // Functions
 
 void printMap()
@@ -46,32 +52,33 @@ void printMap()
     }
 }
 
-bool inNode(double robotX, double robotY, int &nearestNodeX, int &nearestNodeY)
+bool inNode(double robotX, double robotY, int nearestNodeX, int nearestNodeY)
 {
-    // Find nearest node
-    nearestNodeX = round(robotX);
-    nearestNodeY = round(robotY);
     // ROS_INFO("Nearest node: (%d , %d)",nearestNodeX,nearestNodeY);
-
     // Check if I'm close enough
     double dist = sqrt(pow(robotX - nearestNodeX, 2) + pow(robotY - nearestNodeY, 2));
     // ROS_INFO("Distance from node: %lf",dist);
     return (dist <= 0.2);
 }
+//go to an init position specified by des_pos_X and des_pos_Y as a parameter at launch time
+bool inInitPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int initX, int initY)
+{
+    return (nearestNodeX == initX and nearestNodeY == initY);
+}
 
 bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int robot_ID)
 {
     // Array of possibile moves alongside all 8 direction                                                     //When the robot is not in "RandomMovement" mode
-    vector<vector<int>> move{{+0, +1},
-                             {+1, +0},
-                             {+0, -1},
+    vector<vector<int>> move{{+0, -1},
                              {-1, +0},
+                             {+0, +1},
+                             {+1, +0},
                              {+1, +1},
                              {+1, -1},
                              {-1, -1},
                              {-1, +1}};
     //the priority order to move in a unvisited node is:
-    // up > right > down > left >   up_right > down_right > down_left > up_left
+    // down > left > up > right   up_right > down_right > down_left > up_left
     // ^-<orthogonal movements>-^   ^----------<diagonal movements>-----------^
 
     //random movement flag
@@ -82,7 +89,7 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int ro
     // index of desired position
     int desIdx = 8;
 
-    printMap();
+    //printMap();
 
     vector<int> index = {0, 1, 2, 3, 4, 5, 6, 7};
 
@@ -131,7 +138,7 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int ro
         }
         catch (const std::exception &e)
         {
-            ROS_INFO("Near map bounds");
+            //ROS_INFO("Near map bounds");
         }
     }
 
@@ -140,7 +147,7 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int ro
 
         int new_X = nearestNodeX + move.at(desIdx).at(0);
         int new_Y = nearestNodeY + move.at(desIdx).at(1);
-        ROS_INFO("Updated position for Robot %d: (%d,%d)", robot_ID, new_X, new_Y);
+        //ROS_INFO("Updated position for Robot %d: (%d,%d)", robot_ID, new_X, new_Y);
         nh.setParam("des_pos_x", new_X);
         nh.setParam("des_pos_y", new_Y);
         return true;
@@ -174,7 +181,6 @@ vector<vector<int>> mapDecoder(string s)
     return decodedMap;
 }
 
-// Main
 int main(int argc, char **argv)
 {
 
@@ -186,12 +192,13 @@ int main(int argc, char **argv)
     int robot_ID;
     nh.getParam("robot_ID", robot_ID);
     int initX, initY; // initial position
-    nh.getParam("dex_pos_x", initX);
+    nh.getParam("des_pos_x", initX);
     nh.getParam("des_pos_y", initY);
-
+    //ROS_INFO("%d, init pos %d,%d", robot_ID, initX, initY);
     // Subscribers & Services Clients
     ros::Subscriber odom_sub = nh.subscribe("odom", 1000, odomCallback);
     ros::Subscriber map_sub = nh.subscribe("/node_map", 1000, mapCallback);
+    ros::Subscriber laser_sub = nh.subscribe("front_laser/scan", 1000, laserCallback);
     // Publishers & Services Servers
     ros::Publisher visitedPub;
     visitedPub = nh.advertise<geometry_msgs::Point32>("/node_visited", 5);
@@ -202,36 +209,12 @@ int main(int argc, char **argv)
     int lastNodeVisitedX = map_size * map_size;
     int lastNodeVisitedY = map_size * map_size;
     bool newNode = false;
+    bool obstacleDetected = false;
+    bool inMap = false;
     string direction = "right";
     geometry_msgs::Point32 node_visited;
 
     ros::Rate rate(50);
-
-    // Approaching to the map phase: reach initial position
-    while (ros::ok())
-    {
-        // Perform callbacks
-        ros::spinOnce();
-
-        // Store current position
-        robotX = robotPose.position.x;
-        robotY = robotPose.position.y;
-        // ROS_INFO("Current position: (%lf , %lf)",robotX,robotY);
-
-        // Check if we are in a new node
-        if (inNode(robotX, robotY, nearestNodeX, nearestNodeY))
-        {
-            newNode = ((lastNodeVisitedX != nearestNodeX) || (lastNodeVisitedY != nearestNodeY));
-            lastNodeVisitedX = nearestNodeX;
-            lastNodeVisitedY = nearestNodeY;
-        }
-
-        // If we're not in the desired intial position, keep moving towards it
-        if (nearestNodeX != initX && nearestNodeY != initY)
-            break;
-
-        rate.sleep();
-    }
 
     // Exploration phase
     while (ros::ok())
@@ -240,59 +223,69 @@ int main(int argc, char **argv)
         ros::spinOnce();
 
         // Store current position
-        robotX = roundf(robotPose.position.x * 100) / 100;
-        robotY = roundf(robotPose.position.y * 100) / 100;
-        /* float roll  = robotPose.orientation.x;
-        float pitch = robotPose.orientation.y;
-        float yaw   = robotPose.orientation.z;
-        robotYaw = roundf(q.toRotationMatrix().eulerAngles(roll, pitch, yaw)*100)/100;
-        */
-        robotYaw = robotPose.orientation.z;
-        // ROS_INFO("Current position: (%lf , %lf)",robotX,robotY);
+        robotX = robotPose.position.x;
+        robotY = robotPose.position.y;
 
-        // Check if we moved
-        bool notMoving = (robotX == lastRobotX && robotY == lastRobotX && robotYaw == lastRobotYaw);
-        // Then update last exact position
-        lastRobotX = robotX;
-        lastRobotY = robotY;
-        lastRobotYaw = robotYaw;
+        // Find nearest node
+        nearestNodeX = round(robotX);
+        nearestNodeY = round(robotY);
 
-        // Check if we are in a new node
-        if (inNode(robotX, robotY, nearestNodeX, nearestNodeY))
+        if (inNode(robotX, robotY, nearestNodeX, nearestNodeY) && not inMap)
         {
-            newNode = ((lastNodeVisitedX != nearestNodeX) || (lastNodeVisitedY != nearestNodeY));
-            lastNodeVisitedX = nearestNodeX;
-            lastNodeVisitedY = nearestNodeY;
+            //ROS_INFO("Planner - Robot %d goal in %d,%d - Current position: %d,%d ", robot_ID, initX, initY, nearestNodeX, nearestNodeY);
+            if (inInitPos(nh, nearestNodeX, nearestNodeY, initX, initY))
+                inMap = true;
         }
-
-        // Check if we are in the map
-        if (abs(robotX) >= LIMIT + .5 || abs(robotY) >= LIMIT + .5)
+        if (inMap)
         {
-            ROS_INFO("Robot %d out of the map \n", robot_ID);
-            // go towards the origin
-            nh.setParam("des_pos_x", 0);
-            nh.setParam("des_pos_y", 0);
-            continue;
-        }
+            try
+            {
+                int obstX, obstY; // Check if your desired position is actually an obstacle
+                nh.getParam("des_pos_x", obstX);
+                nh.getParam("des_pos_y", obstY);
+                if (node_map.at(obstX + LIMIT).at(obstY + LIMIT) < 0)
+                {
+                    nh.setParam("des_pos_x", lastNodeVisitedX);
+                    nh.setParam("des_pos_y", lastNodeVisitedY);
+                    obstacleDetected = true;
+                    continue;
+                }
+            }
+            catch (const std::exception &e)
+            {
+                ROS_INFO("Planner - Robot %d out of map", robot_ID);
+            }
 
-        // If we are in a new node in the map, publish the position of the node we just entered
-        if (newNode)
-        {
-            updateDesPos(nh, nearestNodeX, nearestNodeY, robot_ID);
-            node_visited.x = nearestNodeX;
-            node_visited.y = nearestNodeY;
-            node_visited.z = robot_ID;
-            visitedPub.publish(node_visited);
-        }
+            // Check if we are in a new node
+            if (inNode(robotX, robotY, nearestNodeX, nearestNodeY))
+            {   
+                ROS_INFO("Planner - Robot %d is in a node %d,%d", robot_ID, nearestNodeX, nearestNodeY);
+                newNode = ((lastNodeVisitedX != nearestNodeX) || (lastNodeVisitedY != nearestNodeY));
+                ROS_INFO("Planner - Robot %d  new node is %d (1 true, 0 false)", robot_ID, int(newNode));
 
-        // If we are not moving, just update the desired position
-        if (notMoving)
-        {
-            ROS_INFO("Robot %d not moving", robot_ID);
-            updateDesPos(nh, nearestNodeX, nearestNodeY, robot_ID);
-        }
+                lastNodeVisitedX = nearestNodeX;
+                lastNodeVisitedY = nearestNodeY;
+            }
+            // If we are in a new node in the map, publish the position of the node we just entered
+            if (newNode || obstacleDetected)
+            {
+                if (obstacleDetected)
+                {
+                    updateDesPos(nh, nearestNodeX, nearestNodeY, robot_ID);
+                    obstacleDetected = false;
+                }
+                else
+                {
+                    updateDesPos(nh, nearestNodeX, nearestNodeY, robot_ID);
+                    node_visited.x = nearestNodeX;
+                    node_visited.y = nearestNodeY;
+                    node_visited.z = robot_ID;
+                    visitedPub.publish(node_visited);
+                }
+            }
 
-        rate.sleep();
+            rate.sleep();
+        }
     }
 
     return 0;
