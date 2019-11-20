@@ -123,9 +123,6 @@ def go_straight_ahead(des_pos):
         twist_msg.linear.x = linear_vel
         twist_msg.angular.z = -0.05*err_yaw if err_yaw > 0 else 0.05*err_yaw
         pub.publish(twist_msg)
-        # if we are not arrived, check if the position in the meantime is changed
-        desired_position_.x = rospy.get_param('des_pos_x')
-        desired_position_.y = rospy.get_param('des_pos_y')
         
     else:
         # rospy.loginfo('Position error: [%s]' , err_pos)
@@ -155,7 +152,7 @@ def done():
 
 
 def main():
-    global pub, active_
+    global pub, active_, desired_position_
     
     rospy.init_node('go_to_point')
     rospy.loginfo("Go to point service node started in state: %s" % state_dict_[state_])
@@ -171,6 +168,10 @@ def main():
         if not active_:
             continue
         else:
+
+            desired_position_.x = rospy.get_param('des_pos_x')
+            desired_position_.y = rospy.get_param('des_pos_y')
+
             if state_ == 0:
                 fix_yaw(desired_position_)
             elif state_ == 1:

@@ -35,16 +35,11 @@
     <param name="des_pos_y" value="$(arg des_y)"/>
     <param name="random" value="$(arg random_planning)"/>
 
-    <node name="go_to_point_switch" pkg="node_counting_alg" type="go_to_point_service.py"/>
-    <node name="wall_follow_switch" pkg="node_counting_alg" type="wall_follow_service.py"/>
-    <node name="bug_alg_switch" pkg="node_counting_alg" type="bug_alg_service.py"/>
-
     <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" args="-urdf -model $(arg ns)/$(arg xacro_name) -param robot_description -x  $(arg X) -y  $(arg Y) -z  $(arg Z)"/>
 
+    <node name="go_to_point_switch" pkg="node_counting_alg" type="go_to_point_service.py"/>
     <node name="controller" pkg="node_counting_alg" type="controller_node.py"/>
-    <node name="planner" pkg="node_counting_alg" type="planner_node" />
-    <!--<node name="basic_planner" pkg="node_counting_alg" type="basic_planner_node"/>--> 
-    <!--<node name="mapper" pkg="node_counting_alg" type="mapper_node" />-->
+    <node name="planner" pkg="node_counting_alg" type="planner_node" output="screen"/>
   </group>
 
 </launch>

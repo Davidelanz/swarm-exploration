@@ -3,11 +3,11 @@
 
   <!-- Spawn the world-->
   <include file="$(find node_counting_alg)/launch/world_init.launch">
-    <arg name="world" value="complex" />
+    <arg name="world" value="easy" />
   </include>
 
   <!-- Set the velocities keep the ratio 10:1 -->
-  <param name="lin_vel" value="3.0"/>
+  <param name="lin_vel" value=".9"/>
   <param name="ang_vel" value=".3"/>
 
   <!-- Pass the map size -->

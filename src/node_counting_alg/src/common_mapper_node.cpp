@@ -110,7 +110,7 @@ void mapUpdate(int index, int curr_node_x, int curr_node_y,
             if (node_map.at(curr_node_x + LIMIT).at(curr_node_y + LIMIT) == 0)
                 node_map.at(curr_node_x + LIMIT).at(curr_node_y + LIMIT) = -1;
         }
-        // If you can update the map, then print it in sceen and publish it
+        // If you can update the map, then print it in screen and publish it
         std_msgs::String codedMap;
         codedMap.data = mapCoder();
         printMap();
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
     ros::Subscriber obst_sub = nh.subscribe("/obstacle_node", 100, obstacleCallback);
 
     // Publishers & Services Servers
-    mapPub = nh.advertise<std_msgs::String>("node_map", 5);
+    mapPub = nh.advertise<std_msgs::String>("/node_map", 5);
 
     // Loop variables;
     int last_node_x, last_node_y, last_obst_x, last_obst_y;

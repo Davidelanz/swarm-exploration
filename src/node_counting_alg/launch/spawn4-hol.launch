@@ -7,15 +7,15 @@
   </include>
 
   <!-- Set the velocities keep the ratio near 10:1 -->
-  <param name="lin_vel" value=".9"/>
-  <param name="ang_vel" value=".1"/>
+  <param name="lin_vel" value="1.5"/>
+  <param name="ang_vel" value=".3"/>
 
   <!-- Pass the map size -->
   <param name="map_size" value="11"/>
 
   <!-- Launch the map interpolator -->
   <param name="num_robot" value="4"/>
-  <node name="common_mapper" pkg="node_counting_alg" type="common_mapper_node" output="screen"/>
+  <node name="common_mapper" pkg="node_counting_alg" type="common_mapper_node" />
 
   <!-- Spawn robot 1 -->
   <include file="$(find node_counting_alg)/launch/spawn_robot.launch">
