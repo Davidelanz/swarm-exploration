@@ -55,7 +55,6 @@ void printMap()
 bool inNode(double robotX, double robotY, int nearestNodeX, int nearestNodeY)
 {
     // ROS_INFO("Nearest node: (%d , %d)",nearestNodeX,nearestNodeY);
-
     // Check if I'm close enough
     double dist = sqrt(pow(robotX - nearestNodeX, 2) + pow(robotY - nearestNodeY, 2));
     // ROS_INFO("Distance from node: %lf",dist);
@@ -90,7 +89,7 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int ro
     // index of desired position
     int desIdx = 8;
 
-    printMap();
+    //printMap();
 
     vector<int> index = {0, 1, 2, 3, 4, 5, 6, 7};
 
@@ -139,7 +138,7 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int ro
         }
         catch (const std::exception &e)
         {
-            ROS_INFO("Near map bounds");
+            //ROS_INFO("Near map bounds");
         }
     }
 
@@ -246,7 +245,6 @@ int main(int argc, char **argv)
                 nh.getParam("des_pos_y", obstY);
                 if (node_map.at(obstX + LIMIT).at(obstY + LIMIT) < 0)
                 {
-                    ROS_INFO("Planner - Robot %d is stucked in this continue", robot_ID); 
                     nh.setParam("des_pos_x", lastNodeVisitedX);
                     nh.setParam("des_pos_y", lastNodeVisitedY);
                     obstacleDetected = true;
@@ -255,17 +253,19 @@ int main(int argc, char **argv)
             }
             catch (const std::exception &e)
             {
-                ROS_INFO("Planner - Robot %d ut of map", robot_ID);
+                ROS_INFO("Planner - Robot %d out of map", robot_ID);
             }
 
             // Check if we are in a new node
             if (inNode(robotX, robotY, nearestNodeX, nearestNodeY))
-            {
+            {   
+                ROS_INFO("Planner - Robot %d is in a node %d,%d", robot_ID, nearestNodeX, nearestNodeY);
                 newNode = ((lastNodeVisitedX != nearestNodeX) || (lastNodeVisitedY != nearestNodeY));
+                ROS_INFO("Planner - Robot %d  new node is %d (1 true, 0 false)", robot_ID, int(newNode));
+
                 lastNodeVisitedX = nearestNodeX;
                 lastNodeVisitedY = nearestNodeY;
             }
-
             // If we are in a new node in the map, publish the position of the node we just entered
             if (newNode || obstacleDetected)
             {

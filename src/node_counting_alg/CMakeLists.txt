@@ -44,7 +44,7 @@ include_directories(
 ## Declare a cpp executable
 add_executable(planner_node           src/planner_node.cpp      )
 add_executable(basic_planner_node     src/basic_planner_node.cpp)
-add_executable(mapper_node            src/mapper_node.cpp       )
+add_executable(mapper_node     src/mapper_node.cpp)
 add_executable(common_mapper_node     src/common_mapper_node.cpp)
 
 
@@ -55,5 +55,5 @@ add_executable(common_mapper_node     src/common_mapper_node.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(planner_node          ${catkin_LIBRARIES})
 target_link_libraries(basic_planner_node    ${catkin_LIBRARIES})
-target_link_libraries(mapper_node           ${catkin_LIBRARIES})
+target_link_libraries(mapper_node    ${catkin_LIBRARIES})
 target_link_libraries(common_mapper_node    ${catkin_LIBRARIES})

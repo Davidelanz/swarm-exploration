@@ -139,12 +139,7 @@ def done():
     twist_msg.linear.x = 0
     twist_msg.angular.z = 0
     pub.publish(twist_msg)
-    new_desired_pos_.x = rospy.get_param('des_pos_x')
-    new_desired_pos_.y = rospy.get_param('des_pos_y')
-    if ((desired_position_.x != new_desired_pos_.x) or (desired_position_.y != new_desired_pos_.y)):
-        desired_position_.x = new_desired_pos_.x
-        desired_position_.y = new_desired_pos_.y
-        change_state(0)
+    change_state(0)
 
 
 
