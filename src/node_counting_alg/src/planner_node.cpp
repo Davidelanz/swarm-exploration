@@ -21,6 +21,7 @@ geometry_msgs::Pose robotPose;
 const int map_size = 2 * LIMIT + 1;
 vector<vector<int>> node_map(map_size, vector<int>(map_size, 0));
 float frontLaser;
+int num_robot;
 
 // Prototypes
 vector<vector<int>> mapDecoder(string s);
@@ -68,7 +69,8 @@ bool inInitPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int initX
 
 bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int robot_ID)
 {
-    // Array of possibile moves alongside all 8 direction                                                     //When the robot is not in "RandomMovement" mode
+
+    // Array of possibile moves alongside all 8 direction
     vector<vector<int>> move{{+0, -1},
                              {-1, +0},
                              {+0, +1},
@@ -77,7 +79,7 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int ro
                              {+1, -1},
                              {-1, -1},
                              {-1, +1}};
-    //the priority order to move in a unvisited node is:
+    // When the robot is not in "RandomMovement" modethe priority order to move in a unvisited node is:
     // down > left > up > right   up_right > down_right > down_left > up_left
     // ^-<orthogonal movements>-^   ^----------<diagonal movements>-----------^
 
@@ -92,7 +94,17 @@ bool updateDesPos(ros::NodeHandle nh, int nearestNodeX, int nearestNodeY, int ro
     //printMap();
 
     vector<int> index = {0, 1, 2, 3, 4, 5, 6, 7};
-
+    enum class moves
+    {
+        down,
+        left,
+        up,
+        right,
+        up_right,
+        down_right,
+        down_left,
+        up_left
+    };
     if (randomMovement)
     {
         vector<int> randIndex = {0, 1, 2, 3};
@@ -194,14 +206,17 @@ int main(int argc, char **argv)
     int initX, initY; // initial position
     nh.getParam("des_pos_x", initX);
     nh.getParam("des_pos_y", initY);
+    
+    nh.getParam("/num_robot", num_robot);
     //ROS_INFO("%d, init pos %d,%d", robot_ID, initX, initY);
     // Subscribers & Services Clients
     ros::Subscriber odom_sub = nh.subscribe("odom", 1000, odomCallback);
     ros::Subscriber map_sub = nh.subscribe("/node_map", 1000, mapCallback);
     ros::Subscriber laser_sub = nh.subscribe("front_laser/scan", 1000, laserCallback);
     // Publishers & Services Servers
-    ros::Publisher visitedPub;
+    ros::Publisher visitedPub, desiredPub;
     visitedPub = nh.advertise<geometry_msgs::Point32>("/node_visited", 5);
+    desiredPub = nh.advertise<geometry_msgs::Point32>("/node_desired", 5);
 
     // Loop variables
     double robotX, robotY, robotYaw, lastRobotX, lastRobotY, lastRobotYaw;
@@ -213,7 +228,12 @@ int main(int argc, char **argv)
     bool inMap = false;
     string direction = "right";
     geometry_msgs::Point32 node_visited;
-
+    geometry_msgs::Point32 node_desired; //to publish the desired position in order to avoid collision between robots
+    nh.getParam("des_pos_x", node_desired.x);
+    nh.getParam("des_pos_y", node_desired.y);
+    node_desired.z = robot_ID;
+    desiredPub.publish(node_desired);
+  
     ros::Rate rate(50);
 
     // Exploration phase
@@ -221,7 +241,6 @@ int main(int argc, char **argv)
     {
         // Perform callbacks
         ros::spinOnce();
-
         // Store current position
         robotX = robotPose.position.x;
         robotY = robotPose.position.y;
@@ -243,8 +262,11 @@ int main(int argc, char **argv)
                 int obstX, obstY; // Check if your desired position is actually an obstacle
                 nh.getParam("des_pos_x", obstX);
                 nh.getParam("des_pos_y", obstY);
-                if (node_map.at(obstX + LIMIT).at(obstY + LIMIT) < 0)
+                ROS_INFO("Planner - Robot %d obstacle in DP -> %d == %d ", robot_ID, node_map.at(obstX + LIMIT).at(obstY + LIMIT), -(num_robot + 1));
+
+                if (node_map.at(obstX + LIMIT).at(obstY + LIMIT) == -(num_robot + 1))
                 {
+                    ROS_INFO("Planner - Robot %d obstacle detected", robot_ID);
                     nh.setParam("des_pos_x", lastNodeVisitedX);
                     nh.setParam("des_pos_y", lastNodeVisitedY);
                     obstacleDetected = true;
@@ -258,17 +280,20 @@ int main(int argc, char **argv)
 
             // Check if we are in a new node
             if (inNode(robotX, robotY, nearestNodeX, nearestNodeY))
-            {   
-                ROS_INFO("Planner - Robot %d is in a node %d,%d", robot_ID, nearestNodeX, nearestNodeY);
+            {
+                // ROS_INFO("Planner - Robot %d is in a node %d,%d", robot_ID, nearestNodeX, nearestNodeY);
                 newNode = ((lastNodeVisitedX != nearestNodeX) || (lastNodeVisitedY != nearestNodeY));
-                ROS_INFO("Planner - Robot %d  new node is %d (1 true, 0 false)", robot_ID, int(newNode));
 
                 lastNodeVisitedX = nearestNodeX;
                 lastNodeVisitedY = nearestNodeY;
             }
+
+            //ROS_INFO("Planner - Robot %d is waiting for a new pos \n newNode is %d \n ObstDet is %d", robot_ID, int(newNode),int(obstacleDetected));
+
             // If we are in a new node in the map, publish the position of the node we just entered
             if (newNode || obstacleDetected)
             {
+
                 if (obstacleDetected)
                 {
                     updateDesPos(nh, nearestNodeX, nearestNodeY, robot_ID);
@@ -281,6 +306,12 @@ int main(int argc, char **argv)
                     node_visited.y = nearestNodeY;
                     node_visited.z = robot_ID;
                     visitedPub.publish(node_visited);
+
+                    nh.getParam("des_pos_x", node_desired.x);
+                    nh.getParam("des_pos_y", node_desired.y);
+                    node_desired.z = robot_ID;
+                    desiredPub.publish(node_desired);
+                    //ROS_INFO("Planner - Robot %d  new pos achived %d,%d", robot_ID, int(node_desired.x), int(node_desired.y));
                 }
             }
 

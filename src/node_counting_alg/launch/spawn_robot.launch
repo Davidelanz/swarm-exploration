@@ -39,7 +39,7 @@
 
     <node name="go_to_point_switch" pkg="node_counting_alg" type="go_to_point_service.py"/>
     <node name="controller" pkg="node_counting_alg" type="controller_node.py"/>
-    <node name="planner" pkg="node_counting_alg" type="planner_node" output="screen"/>
+    <node name="planner" pkg="node_counting_alg" type="planner_node"/>
   </group>
 
 </launch>

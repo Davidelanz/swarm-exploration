@@ -110,7 +110,7 @@ def main():
 
         if state_ == 0:
             # whilegoint to point if detects an obstacle
-            if regions_["front"] < 0.2 or regions_["front"] > 99999:
+            if regions_["front"] < 0.25 or regions_["front"] > 99999:
                 rospy.loginfo("Controller node - Obstacle detected")
                 msg = Point()
                 # Estimate obstacle's position w.r.t fixed-tobot frame transformation
@@ -127,7 +127,7 @@ def main():
             
         elif state_ == 1:
 
-            frontFree = regions_['front'] > 0.5 and regions_['fright'] > 0.5 and  regions_['fleft'] > 0.5
+            frontFree = regions_['front'] > 0.5 and (regions_['fright'] > 0.5 or  regions_['fleft'] > 0.5)
             if not frontFree:
                 rospy.loginfo("Controller node - Front not free")
                 msg = Twist()
