@@ -1,4 +1,4 @@
-# Eperimental Robotics Lab (EXROB) ROS workspace 
+# Fixed-Map Exploration Through a Robotic Swarm
 
 The aim of this project was to build a simulation with up to 4 robots implementing the Node counting algorithm: a simple graph-traversal method.
 
