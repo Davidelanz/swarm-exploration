@@ -1,34 +1,28 @@
 # Fixed-Map Exploration Through a Robotic Swarm
 
-The aim of this project was to build a simulation with up to 4 robots implementing the Node counting algorithm: a simple graph-traversal method.
+The aim of this project was to build a simulation with up to 4 robots implementing the Node counting algorithm (a simple graph-traversal method) in order to **autonomously map** the fixed-lenght environment in which they are spawned, along with the obstacles contained in it, to a fully connected graph shared representation. The architecture implements a **distributed control** approach, with the only centralized node which integrates the data sent by each autonoumous robot.
+
+**Note**: a `demo.mkv` demonstration video is available in the main folder.
 
 ![alt text](https://github.com/Davidelanz/expro_asmt1/blob/master/demo.png)
 
 ## Implementation
 ### Assumptions
 In order to implement this architecture some assumptions were made:
-1. The robots are considered to be holonomic.
 1. The map and the corresponding graph are constructed by the robots as they explore their surrounding environment, by placing a -1 in the position of the obstacle detected.
 1. The distances between nodes is equal to 1 meter.
 1. A node is set as "visited" if the robot is at a distance > 0.2 meter from the node.
-1. Robots may continuously share information.
-1. The input graph is connected .
 1. At the beginning of the simulation, the robots could be in random positions, but thery are always outside the graph.
-
-### Requirements
-
 1. All free nodes should be visited by at least one robot.
-1. The algorithm should be reliable and robust to variation of the maps (size and obstacles), of the starting position of the robot and of the number of robots.
+1. The algorithm has to be robust to variation of the maps (size and obstacles), of the starting position of the robot and of the number of robots.
+1. The robots use to detect obstacoles in run-time, and they are not informed of the position of other robots by the centralized node
 
 ## Ros Package
 
 The developed package is divided in the following folders:
-1. urdf folder with .xacro robot description
-1. launch folder with relative launchfiles setting up the simulation environment with different number of robots (empty world), taking as input the starting position of each robot ( a launch file for each different number of robots). 
-1. src code implementing the algorithm (taking as input a text file with the map/graph description).
-#### Optional
-1. Add a laser sensor to the robots.
-1. Use the laser to discover obstacoles in run-time
+1. `urdf` folder with `.xacro` robot description
+1. `launch` folder with relative launchfiles setting up the simulation environment with different number of robots (empty world), taking as input the starting position of each robot (a launch file for each different number of robots). 
+1. `src` code implementing the algorithm (taking as input a text file with the map/graph description).
 
 ### Software prerequisites:
 1. ROS kinetic, to download it follow [this guide](http://wiki.ros.org/kinetic/Installation/Ubuntu).
